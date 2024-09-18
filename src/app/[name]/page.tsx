@@ -1,14 +1,13 @@
-const NamePage = ({ params }: { params: { name: string } }) => {
-  const { name } = params;
+"use client";
 
-  const name_change = decodeURI(name);
+const CalendarPage = ({ params }: { params: { name: string } }) => {
+  const { name } = params;
 
   return (
     <div>
-      <h1>Welcome, {name_change}</h1>
-      {/* Add more content here as needed */}
+      <div className="text-xl font-bold">{decodeURI(name)} 선생님의 시간표</div>
     </div>
   );
 };
 
-export default NamePage;
+export default CalendarPage;

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { AntdRegistry } from "@ant-design/nextjs-registry";
 
 import "./globals.css";
 
@@ -18,7 +19,9 @@ export default function RootLayout({
     <html lang="ko">
       <body className="font-cookierun max-w-screen-xl mx-auto">
         <Header />
-        <div className="p-10">{children}</div>
+        <AntdRegistry>
+          <div className="p-10">{children}</div>
+        </AntdRegistry>
         <Footer />
       </body>
     </html>
