@@ -21,13 +21,10 @@ const Header = () => {
         <nav className="hidden md:block">
           <ul className="flex space-x-6 text-lg text-gray-700">
             <li>
-              <Link href="/cookie">쿠키</Link>
+              <Link href="/cookie">학생</Link>
             </li>
             <li>
-              <Link href="/equipment">장비</Link>
-            </li>
-            <li>
-              <Link href="/artifact">아티팩트</Link>
+              <Link href="/equipment">선생님</Link>
             </li>
           </ul>
         </nav>
@@ -54,17 +51,12 @@ const Header = () => {
             </li>
             <li>
               <Link href="/cookie" onClick={toggleNavbar}>
-                쿠키
+                학생
               </Link>
             </li>
             <li>
               <Link href="/equipment" onClick={toggleNavbar}>
-                장비
-              </Link>
-            </li>
-            <li>
-              <Link href="/artifact" onClick={toggleNavbar}>
-                아티팩트
+                선생님
               </Link>
             </li>
           </ul>
