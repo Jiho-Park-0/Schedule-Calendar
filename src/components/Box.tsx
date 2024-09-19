@@ -14,7 +14,7 @@ export default function Box({ name, backgroundColor }: BoxProps) {
   return (
     <button
       onClick={() => router.push(`/${name}`)}
-      className={`rounded-lg text-white w-1/2 h-28 text-3xl flex items-center justify-center`}
+      className={`p-4 rounded-lg shadow cursor-pointer transition-transform hover:scale-105 text-white`}
       style={{ backgroundColor }}
     >
       <div style={{ backgroundColor, padding: "20px", cursor: "pointer" }}>

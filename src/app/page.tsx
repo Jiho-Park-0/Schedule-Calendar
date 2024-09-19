@@ -94,7 +94,7 @@ export default function MainPage() {
             {boxes.map((room, index) => (
               <Box
                 key={index}
-                name={room.name}
+                name={`${room.name} 선생님`}
                 backgroundColor={room.backgroundColor}
               />
             ))}
