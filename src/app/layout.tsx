@@ -17,10 +17,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko">
-      <body className="font-cookierun max-w-screen-xl mx-auto">
+      <body className="font-cookierun max-w-screen-xl mx-auto bg-gray-100">
         <Header />
         <AntdRegistry>
-          <div className="p-10">{children}</div>
+          <div className="p-10 ">{children}</div>
         </AntdRegistry>
         <Footer />
       </body>

@@ -12,10 +12,10 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-white">
+    <header className="bg-gray-100">
       <div className="flex justify-between items-center py-5 px-10">
         <Link href="/">
-          <h1 className="text-2xl font-bold text-gray-800">스케줄러</h1>
+          <h1 className="text-2xl font-bold text-gray-800">메카수학</h1>
         </Link>
 
         <nav className="hidden md:block">

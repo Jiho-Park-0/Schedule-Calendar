@@ -3,7 +3,7 @@ import Link from "next/link";
 
 const Footer = () => {
   return (
-    <footer className="md:flex justify-between items-center py-5 px-10 bg-white mt-auto">
+    <footer className="md:flex justify-between items-center py-5 px-10 bg-gray-100 mt-auto">
       <p className="text-sm text-gray-500">
         Copyright © 2023 BRIX Templates | All Rights Reserved
       </p>
