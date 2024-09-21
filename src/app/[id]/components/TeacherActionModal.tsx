@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-
 import { Modal, Input, message, Select } from "antd";
-
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+import { doc, getDoc, deleteDoc } from "firebase/firestore";
+import { scheduleCalendarFirestore } from "@/firebase";
 
 interface TeacherActionModalProps {
   isOpen: boolean;
@@ -11,8 +11,8 @@ interface TeacherActionModalProps {
 }
 
 interface Profile {
+  id: string;
   name: string;
-
   password: string;
   backgroundColor: string;
 }
@@ -23,36 +23,32 @@ const TeacherActionModal: React.FC<TeacherActionModalProps> = ({
   actionType,
 }) => {
   const [password, setPassword] = useState("");
-
-  const [profiles, setProfiles] = useState<Profile[]>([]);
-
-  const { name } = useParams() as { name: string };
-
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const { id } = useParams() as { id: string };
   const [selectedMonth, setSelectedMonth] = useState<string>("");
+  const router = useRouter(); // useRouter 추가
 
   useEffect(() => {
-    fetch("/profile.json")
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
+    const fetchProfile = async () => {
+      try {
+        const docRef = doc(scheduleCalendarFirestore, "profiles", id);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          const profileData = docSnap.data() as Profile;
+          setProfile(profileData);
+        } else {
+          console.error("Profile not found");
         }
-
-        return response.json();
-      })
-
-      .then((data) => {
-        setProfiles(data);
-      })
-      .catch((error) => {
+      } catch (error) {
         console.error("Error fetching profile data:", error);
-      });
-  }, []);
+      }
+    };
 
-  const handleOk = () => {
-    const decodedName = decodeURI(name);
+    fetchProfile();
+  }, [id]);
 
-    const profile = profiles.find((profile) => profile.name === decodedName);
-
+  const handleOk = async () => {
     if (profile && profile.password === password) {
       if (actionType === "deleteSchedule") {
         // Implement schedule deletion logic here
@@ -61,10 +57,16 @@ const TeacherActionModal: React.FC<TeacherActionModalProps> = ({
         // Implement schedule loading logic here
         message.success("스케줄 불러오기 성공");
       } else if (actionType === "deleteClass") {
-        // Implement class deletion logic here
-        message.success("반 삭제 성공");
+        try {
+          await deleteDoc(doc(scheduleCalendarFirestore, "profiles", id));
+          message.success("반 삭제 성공");
+          onClose();
+          router.push("/"); // 메인 페이지로 리다이렉션
+        } catch (error) {
+          console.error("Error deleting class:", error);
+          message.error("반 삭제 실패");
+        }
       }
-      onClose();
     } else {
       message.error("비밀번호가 일치하지 않습니다.");
     }
@@ -74,7 +76,6 @@ const TeacherActionModal: React.FC<TeacherActionModalProps> = ({
     <Modal title="선생님 인증" open={isOpen} onCancel={onClose} onOk={handleOk}>
       <div className="py-4">
         <label htmlFor="teacher-action-password">비밀번호를 입력하세요</label>
-
         <Input
           id="teacher-action-password"
           type="password"

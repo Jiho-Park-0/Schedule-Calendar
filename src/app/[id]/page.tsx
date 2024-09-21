@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Button, Space, Typography } from "antd";
 import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 import moment from "moment";
+import "moment/locale/ko"; // 한국어 로케일을 사용하기 위해 추가
 import { useParams } from "next/navigation";
 import AddClassModal from "@/app/[id]/components/AddClassModal";
 import EditClassModal from "@/app/[id]/components/EditClassModal";
@@ -25,6 +26,7 @@ export default function CalendarPage() {
   const [actionType, setActionType] = useState<
     "deleteSchedule" | "loadSchedule" | "deleteClass"
   >("deleteSchedule");
+  const [selectedDate, setSelectedDate] = useState<moment.Moment | null>(null);
 
   const weekDays = ["일", "월", "화", "수", "목", "금", "토"];
   const weekDates = Array.from({ length: 7 }, (_, i) =>
@@ -80,6 +82,18 @@ export default function CalendarPage() {
     setIsTeacherActionModalOpen(true);
   };
 
+  const getWeekOfMonth = (date: moment.Moment) => {
+    const startOfMonth = date.clone().startOf("month");
+    const startOfWeek = startOfMonth.clone().startOf("week");
+    const weekNumber = Math.ceil(date.diff(startOfWeek, "days") / 7);
+    return weekNumber;
+  };
+
+  const handleAddClassClick = (date: moment.Moment) => {
+    setSelectedDate(date);
+    setIsAddClassModalOpen(true);
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 p-8">
       <div className="max-w-6xl mx-auto">
@@ -90,7 +104,7 @@ export default function CalendarPage() {
             </Title>
             <Text>
               {currentWeek.year()}년 {currentWeek.month() + 1}월{" "}
-              {currentWeek.date()}일 주간 시간표
+              {getWeekOfMonth(currentWeek)}주차 시간표
             </Text>
           </div>
           <Space>
@@ -123,7 +137,7 @@ export default function CalendarPage() {
                 <Button
                   size="small"
                   className="w-full mb-2"
-                  onClick={() => setIsAddClassModalOpen(true)}
+                  onClick={() => handleAddClassClick(date)}
                 >
                   추가
                 </Button>
@@ -148,6 +162,7 @@ export default function CalendarPage() {
       <AddClassModal
         isOpen={isAddClassModalOpen}
         onClose={() => setIsAddClassModalOpen(false)}
+        selectedDate={selectedDate}
       />
       {/* 수업 수정 모달 */}
       <EditClassModal

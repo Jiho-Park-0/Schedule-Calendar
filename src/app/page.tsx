@@ -12,6 +12,7 @@ import {
   setDoc,
 } from "firebase/firestore";
 import { scheduleCalendarFirestore } from "@/firebase";
+import moment from "moment";
 
 const colorOptions = [
   "#1890ff",
@@ -64,6 +65,13 @@ export default function MainPage() {
     fetchBoxes();
   }, []);
 
+  const getWeekOfMonth = (date: moment.Moment) => {
+    const startOfMonth = date.clone().startOf("month");
+    const startOfWeek = startOfMonth.clone().startOf("week");
+    const weekNumber = Math.ceil(date.diff(startOfWeek, "days") / 7);
+    return weekNumber;
+  };
+
   const handleAddBox = async () => {
     if (name && password) {
       try {
@@ -86,6 +94,27 @@ export default function MainPage() {
         await setDoc(
           doc(scheduleCalendarFirestore, "profiles", newBox.id),
           newBox
+        );
+
+        // Calculate the current week of the month
+        const currentDate = moment();
+        const weekOfMonth = getWeekOfMonth(currentDate);
+        const month = currentDate.month() + 1; // month() is 0-indexed
+        const year = currentDate.year();
+        const weekLabel = `${year}년 ${month}월 ${weekOfMonth}주차`;
+
+        // Add an empty document to the new profile's schedule collection
+        await setDoc(
+          doc(
+            collection(
+              scheduleCalendarFirestore,
+              "profiles",
+              newBox.id,
+              weekLabel
+            ),
+            "initial"
+          ),
+          {}
         );
 
         setBoxes([...boxes, newBox]);
@@ -120,16 +149,20 @@ export default function MainPage() {
               시간표 생성
             </Button>
           </div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {boxes.map((room, index) => (
-              <Box
-                key={index}
-                id={room.id}
-                name={`${room.name}`}
-                backgroundColor={room.backgroundColor}
-              />
-            ))}
+            {boxes.map(
+              (
+                room: { id: string; name: string; backgroundColor: string },
+                index: number
+              ) => (
+                <Box
+                  key={index}
+                  id={room.id}
+                  name={room.name}
+                  backgroundColor={room.backgroundColor}
+                />
+              )
+            )}
           </div>
         </div>
       </div>
