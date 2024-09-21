@@ -1,8 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Button, Input, Modal } from "antd";
+import { Button, Input, Modal, message } from "antd";
 import Box from "@/components/Box";
+import {
+  collection,
+  getDocs,
+  query,
+  orderBy,
+  doc,
+  setDoc,
+} from "firebase/firestore";
+import { scheduleCalendarFirestore } from "@/firebase";
 
 const colorOptions = [
   "#1890ff",
@@ -22,7 +31,12 @@ const colorOptions = [
 export default function MainPage() {
   const [isCreateRoomModalOpen, setIsCreateRoomModalOpen] = useState(false);
   const [boxes, setBoxes] = useState<
-    Array<{ name: string; password: string; backgroundColor: string }>
+    Array<{
+      id: string;
+      name: string;
+      password: string;
+      backgroundColor: string;
+    }>
   >([]);
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
@@ -31,8 +45,16 @@ export default function MainPage() {
   useEffect(() => {
     const fetchBoxes = async () => {
       try {
-        const response = await fetch("/profile.json");
-        const data = await response.json();
+        const q = query(
+          collection(scheduleCalendarFirestore, "profiles"),
+          orderBy("id")
+        );
+        const querySnapshot = await getDocs(q);
+        const data = querySnapshot.docs.map((doc) => {
+          console.log(doc.data());
+          const { id, name, password, backgroundColor } = doc.data();
+          return { id, name, password, backgroundColor };
+        });
         setBoxes(data);
       } catch (error) {
         console.error("Error loading profile data:", error);
@@ -44,27 +66,36 @@ export default function MainPage() {
 
   const handleAddBox = async () => {
     if (name && password) {
-      const newBox = { name, password, backgroundColor };
-      setBoxes([...boxes, newBox]);
-      setName("");
-      setPassword("");
-      setBackgroundColor(colorOptions[0]);
-      setIsCreateRoomModalOpen(false);
-
       try {
-        const response = await fetch("/api/saveProfile", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(newBox),
-        });
+        const q = query(
+          collection(scheduleCalendarFirestore, "profiles"),
+          orderBy("id", "desc")
+        );
+        const querySnapshot = await getDocs(q);
+        const lastDoc = querySnapshot.docs[0];
+        const newId = lastDoc ? parseInt(lastDoc.data().id) + 1 : 1;
 
-        if (!response.ok) {
-          throw new Error("Failed to save profile");
-        }
+        const newBox = {
+          id: newId.toString(),
+          name,
+          password,
+          backgroundColor,
+        };
+
+        // Use setDoc to specify the document ID as the id
+        await setDoc(
+          doc(scheduleCalendarFirestore, "profiles", newBox.id),
+          newBox
+        );
+
+        setBoxes([...boxes, newBox]);
+        setName("");
+        setPassword("");
+        setBackgroundColor(colorOptions[0]);
+        setIsCreateRoomModalOpen(false);
       } catch (error) {
         console.error("Error saving profile:", error);
+        message.error("반 생성 실패");
       }
     }
   };
@@ -94,7 +125,8 @@ export default function MainPage() {
             {boxes.map((room, index) => (
               <Box
                 key={index}
-                name={`${room.name} 선생님`}
+                id={room.id}
+                name={`${room.name}`}
                 backgroundColor={room.backgroundColor}
               />
             ))}

@@ -1,27 +1,32 @@
 [
   {
-    "name": "김철수",
-    "password": "1234",
-    "backgroundColor": "#1890ff"
-  },
-  {
-    "name": "123",
-    "password": "123",
-    "backgroundColor": "#3670a6"
-  },
-  {
+    "id": 1,
     "name": "이광현",
     "password": "1234",
     "backgroundColor": "#43627f"
   },
   {
-    "name": "박지호",
+    "id": "2",
+    "name": "송지혜",
     "password": "4444",
-    "backgroundColor": "#ce7f55"
+    "backgroundColor": "#52c41a"
   },
   {
-    "name": "송지혜",
-    "password": "5587",
-    "backgroundColor": "#52c41a"
+    "id": "3",
+    "name": "ㅇㅇㅇ",
+    "password": "123123",
+    "backgroundColor": "#faad14"
+  },
+  {
+    "id": "4",
+    "name": "444",
+    "password": "4444",
+    "backgroundColor": "#faad14"
+  },
+  {
+    "id": "5",
+    "name": "555",
+    "password": "5555",
+    "backgroundColor": "#722ed1"
   }
 ]
