@@ -50,15 +50,23 @@ const AddClassModal: React.FC<AddClassModalProps> = ({
     }
   };
 
+  const getDisplayMonth = (weekStart: moment.Moment) => {
+    const weekDates = Array.from({ length: 7 }, (_, i) =>
+      moment(weekStart).startOf("week").add(i, "days")
+    );
+    const referenceDate = weekDates[4];
+    return `${referenceDate.format("M")}`;
+  };
+
   const handleSave = async () => {
     if (name && password && startTime && endTime && date) {
       const weekOfMonth = getWeekOfMonth(date);
       const collectionPath = `profiles/${teacherId}/${date.format(
-        "YYYY년 M월"
-      )} ${weekOfMonth}`;
+        `YYYY년 ${getDisplayMonth(date)}월 ${weekOfMonth}`
+      )}`;
       const uniqueId = uuidv4();
       const docRef = doc(scheduleCalendarFirestore, collectionPath, uniqueId);
-      console.log(docRef);
+
       await setDoc(docRef, {
         name,
         password,
