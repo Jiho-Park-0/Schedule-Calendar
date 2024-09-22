@@ -12,7 +12,14 @@ import TeacherActionModal from "@/app/[id]/components/TeacherActionModal";
 import DeleteScheduleButton from "@/app/[id]/components/DeleteScheduleButton";
 import LoadScheduleButton from "@/app/[id]/components/LoadScheduleButton";
 import DeleteClassButton from "@/app/[id]/components/DeleteClassButton";
-import { doc, getDoc } from "firebase/firestore";
+import {
+  doc,
+  getDoc,
+  collection,
+  query,
+  where,
+  onSnapshot,
+} from "firebase/firestore";
 import { scheduleCalendarFirestore } from "@/firebase";
 
 const { Title, Text } = Typography;
@@ -27,13 +34,27 @@ export default function CalendarPage() {
     "deleteSchedule" | "loadSchedule" | "deleteClass"
   >("deleteSchedule");
   const [selectedDate, setSelectedDate] = useState<moment.Moment | null>(null);
+  const [selectedSchedule, setSelectedSchedule] = useState<{
+    id: number;
+    name: string;
+    startTime: string;
+    endTime: string;
+    date: string;
+  } | null>(null); // selectedSchedule 상태 추가
+  const [scheduleData, setScheduleData] = useState<
+    {
+      id: number;
+      name: string;
+      startTime: string;
+      endTime: string;
+      date: string;
+    }[]
+  >([]);
 
   const weekDays = ["일", "월", "화", "수", "목", "금", "토"];
   const weekDates = Array.from({ length: 7 }, (_, i) =>
     moment(currentWeek).startOf("week").add(i, "days")
   );
-  console.log(weekDates[4].format("YYYY-MM-DD"));
-  console.log(currentWeek.format("YYYY-MM-DD"));
 
   const moveWeek = (direction: number) => {
     setCurrentWeek(currentWeek.clone().add(direction, "weeks"));
@@ -50,7 +71,6 @@ export default function CalendarPage() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        console.log("Fetching profile for id:", id); // id 확인
         const docRef = doc(scheduleCalendarFirestore, "profiles", id);
         const docSnap = await getDoc(docRef);
 
@@ -76,6 +96,50 @@ export default function CalendarPage() {
 
     fetchProfile();
   }, [id]);
+
+  useEffect(() => {
+    const fetchScheduleData = async () => {
+      try {
+        const startOfWeek = currentWeek.startOf("week").format("YYYY-MM-DD");
+        const endOfWeek = currentWeek.endOf("week").format("YYYY-MM-DD");
+
+        const q = query(
+          collection(
+            scheduleCalendarFirestore,
+            `profiles/${id}/${currentWeek.format(
+              "YYYY년 M월"
+            )} ${getWeekOfMonth(currentWeek)}`
+          ),
+          where("date", ">=", startOfWeek),
+          where("date", "<=", endOfWeek)
+        );
+
+        const unsubscribe = onSnapshot(q, (querySnapshot) => {
+          const data = querySnapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+            startTime: doc.data().startTime || "",
+            endTime: doc.data().endTime || "",
+          }));
+          setScheduleData(
+            data as unknown as {
+              id: number;
+              name: string;
+              startTime: string;
+              endTime: string;
+              date: string;
+            }[]
+          );
+        });
+
+        return () => unsubscribe();
+      } catch (error) {
+        console.error("Failed to fetch schedule data:", error);
+      }
+    };
+
+    fetchScheduleData();
+  }, [id, currentWeek]);
 
   const handleAction = (
     type: "deleteSchedule" | "loadSchedule" | "deleteClass"
@@ -118,6 +182,18 @@ export default function CalendarPage() {
     setIsAddClassModalOpen(true);
   };
 
+  const handleEditClassClick = (schedule: {
+    id: number;
+    name: string;
+    startTime: string;
+    endTime: string;
+    date: string;
+    password: string;
+  }) => {
+    setSelectedSchedule(schedule); // selectedSchedule 상태 업데이트
+    setIsEditClassModalOpen(true);
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 p-8">
       <div className="max-w-6xl mx-auto">
@@ -127,8 +203,8 @@ export default function CalendarPage() {
               {decodeURI(profile?.name || "")} 선생님의 시간표
             </Title>
             <Text>
-              {currentWeek.year()}년{getDisplayMonth(currentWeek)}
-              {getWeekOfMonth(currentWeek)} 시간표
+              {currentWeek.year()}년 {getDisplayMonth(currentWeek)}{" "}
+              {getWeekOfMonth(currentWeek)} 주차 시간표
             </Text>
           </div>
           <Space>
@@ -166,16 +242,24 @@ export default function CalendarPage() {
                   추가
                 </Button>
                 <div className="text-sm space-y-1">
-                  <div className="bg-blue-100 p-1 rounded flex justify-between items-center">
-                    <span>지혜 13:00-14:00</span>
-                    <Button
-                      size="small"
-                      type="text"
-                      onClick={() => setIsEditClassModalOpen(true)}
-                    >
-                      수정
-                    </Button>
-                  </div>
+                  {scheduleData
+                    .filter(
+                      (schedule) => schedule.date === date.format("YYYY-MM-DD")
+                    )
+                    .map((schedule, idx) => (
+                      <div
+                        key={idx}
+                        className="bg-blue-100 p-1 rounded flex justify-between items-center cursor-pointer hover:bg-blue-200 active:bg-blue-300"
+                        onClick={() =>
+                          handleEditClassClick({ ...schedule, password: "" })
+                        }
+                      >
+                        <span>
+                          {schedule.name} {schedule.startTime}-
+                          {schedule.endTime}
+                        </span>
+                      </div>
+                    ))}
                 </div>
               </div>
             ))}
@@ -187,11 +271,14 @@ export default function CalendarPage() {
         isOpen={isAddClassModalOpen}
         onClose={() => setIsAddClassModalOpen(false)}
         selectedDate={selectedDate}
+        teacherId={id}
       />
       {/* 수업 수정 모달 */}
       <EditClassModal
         isOpen={isEditClassModalOpen}
         onClose={() => setIsEditClassModalOpen(false)}
+        selectedSchedule={selectedSchedule} // selectedSchedule 전달
+        teacherId={id}
       />
       {/* 선생님 인증 모달 */}
       <TeacherActionModal
