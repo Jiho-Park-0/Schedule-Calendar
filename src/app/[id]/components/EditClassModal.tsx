@@ -31,6 +31,14 @@ const EditClassModal: React.FC<EditClassModalProps> = ({
   const [password, setPassword] = useState<string>("");
   const [action, setAction] = useState<"edit" | "delete">("edit");
 
+  const getDisplayMonth = (weekStart: moment.Moment) => {
+    const weekDates = Array.from({ length: 7 }, (_, i) =>
+      moment(weekStart).startOf("week").add(i, "days")
+    );
+    const referenceDate = weekDates[4];
+    return `${referenceDate.format("M")}월`;
+  };
+
   const getWeekOfMonth = (date: moment.Moment | null) => {
     if (!date) return "";
     const WEEK_KOR = ["1주차", "2주차", "3주차", "4주차", "5주차"];
@@ -57,14 +65,19 @@ const EditClassModal: React.FC<EditClassModalProps> = ({
       if (isOpen && selectedSchedule) {
         const scheduleDate = moment(selectedSchedule.date);
         const weekOfMonth = getWeekOfMonth(scheduleDate);
+        const ref =
+          scheduleDate.format("YYYY년") +
+          " " +
+          getDisplayMonth(scheduleDate) +
+          " " +
+          weekOfMonth;
         const docRef = doc(
           scheduleCalendarFirestore,
-          `profiles/${teacherId}/${
-            scheduleDate.format("YYYY년 M월") + " " + weekOfMonth
-          }`,
-          selectedSchedule.id // Use the unique ID
+          `profiles/${teacherId}/${ref}`,
+          selectedSchedule.id
         );
         const docSnap = await getDoc(docRef);
+        console.log(ref);
         if (docSnap.exists()) {
           const data = docSnap.data();
           setName(data.name);
@@ -113,11 +126,15 @@ const EditClassModal: React.FC<EditClassModalProps> = ({
       try {
         const scheduleDate = moment(selectedSchedule.date);
         const weekOfMonth = getWeekOfMonth(scheduleDate);
+        const ref =
+          scheduleDate.format("YYYY년") +
+          " " +
+          getDisplayMonth(scheduleDate) +
+          " " +
+          weekOfMonth;
         const docRef = doc(
           scheduleCalendarFirestore,
-          `profiles/${teacherId}/${
-            scheduleDate.format("YYYY년 M월") + " " + weekOfMonth
-          }`,
+          `profiles/${teacherId}/${ref}`,
           selectedSchedule.id // Use the unique ID
         );
         await deleteDoc(docRef);
@@ -153,6 +170,9 @@ const EditClassModal: React.FC<EditClassModalProps> = ({
             startTime,
             endTime,
             date: date ? date.format("YYYY-MM-DD") : selectedSchedule.date,
+            dayOfWeek: date
+              ? date.format("dddd")
+              : moment(selectedSchedule.date).format("dddd"), // Add day of the week
           });
 
           message.success("수업이 수정되었습니다.");

@@ -2,7 +2,7 @@ import { Modal, Input, DatePicker } from "antd";
 import TimePicker from "./TimePicker";
 import { useState, useEffect } from "react";
 import moment from "moment";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, deleteDoc, getDoc } from "firebase/firestore";
 import { scheduleCalendarFirestore } from "@/firebase";
 import { v4 as uuidv4 } from "uuid";
 
@@ -64,6 +64,18 @@ const AddClassModal: React.FC<AddClassModalProps> = ({
       const collectionPath = `profiles/${teacherId}/${date.format(
         `YYYY년 ${getDisplayMonth(date)}월 ${weekOfMonth}`
       )}`;
+
+      // Check and delete the "initial" document if it exists
+      const initialDocRef = doc(
+        scheduleCalendarFirestore,
+        collectionPath,
+        "initial"
+      );
+      const initialDocSnapshot = await getDoc(initialDocRef);
+      if (initialDocSnapshot.exists()) {
+        await deleteDoc(initialDocRef);
+      }
+
       const uniqueId = uuidv4();
       const docRef = doc(scheduleCalendarFirestore, collectionPath, uniqueId);
 
@@ -73,6 +85,7 @@ const AddClassModal: React.FC<AddClassModalProps> = ({
         startTime,
         endTime,
         date: date.format("YYYY-MM-DD"),
+        dayOfWeek: date.format("dddd"), // Add day of the week
       });
 
       onClose();

@@ -209,9 +209,7 @@ export default function CalendarPage() {
           </div>
           <Space>
             <Button>전체 시간표 표시</Button>
-            <DeleteScheduleButton
-              onClick={() => handleAction("deleteSchedule")}
-            />
+            <DeleteScheduleButton teacherId={id} />
             <LoadScheduleButton onClick={() => handleAction("loadSchedule")} />
             <DeleteClassButton onClick={() => handleAction("deleteClass")} />
           </Space>
