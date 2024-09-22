@@ -32,6 +32,8 @@ export default function CalendarPage() {
   const weekDates = Array.from({ length: 7 }, (_, i) =>
     moment(currentWeek).startOf("week").add(i, "days")
   );
+  console.log(weekDates[4].format("YYYY-MM-DD"));
+  console.log(currentWeek.format("YYYY-MM-DD"));
 
   const moveWeek = (direction: number) => {
     setCurrentWeek(currentWeek.clone().add(direction, "weeks"));
@@ -54,7 +56,7 @@ export default function CalendarPage() {
 
         if (docSnap.exists()) {
           const profileData = docSnap.data();
-          console.log("Current profile:", profileData); // 찾은 프로파일을 콘솔에 출력
+
           setProfile(
             profileData as {
               id: string;
@@ -83,10 +85,32 @@ export default function CalendarPage() {
   };
 
   const getWeekOfMonth = (date: moment.Moment) => {
-    const startOfMonth = date.clone().startOf("month");
-    const startOfWeek = startOfMonth.clone().startOf("week");
-    const weekNumber = Math.ceil(date.diff(startOfWeek, "days") / 7);
-    return weekNumber;
+    const WEEK_KOR = ["1주차", "2주차", "3주차", "4주차", "5주차"];
+    const weekDates = Array.from({ length: 7 }, (_, i) =>
+      moment(date).startOf("week").add(i, "days")
+    );
+
+    // weekDates[4]가 포함된 월을 기준으로 주차를 계산
+    const referenceDate = weekDates[4];
+    const firstDate = new Date(referenceDate.year(), referenceDate.month(), 1);
+    const firstDayOfWeek = firstDate.getDay();
+
+    let firstSunday = 1 - firstDayOfWeek;
+    if (firstSunday > 1) {
+      firstSunday -= 7;
+    }
+
+    const weekNum = Math.ceil((referenceDate.date() - firstSunday) / 7);
+
+    return WEEK_KOR[weekNum - 1];
+  };
+
+  const getDisplayMonth = (weekStart: moment.Moment) => {
+    const weekDates = Array.from({ length: 7 }, (_, i) =>
+      moment(weekStart).startOf("week").add(i, "days")
+    );
+    const referenceDate = weekDates[4];
+    return `${referenceDate.format("M")}월`;
   };
 
   const handleAddClassClick = (date: moment.Moment) => {
@@ -103,8 +127,8 @@ export default function CalendarPage() {
               {decodeURI(profile?.name || "")} 선생님의 시간표
             </Title>
             <Text>
-              {currentWeek.year()}년 {currentWeek.month() + 1}월{" "}
-              {getWeekOfMonth(currentWeek)}주차 시간표
+              {currentWeek.year()}년{getDisplayMonth(currentWeek)}
+              {getWeekOfMonth(currentWeek)} 시간표
             </Text>
           </div>
           <Space>

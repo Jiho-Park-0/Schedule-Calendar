@@ -35,7 +35,7 @@ const AddClassModal: React.FC<AddClassModalProps> = ({
       setEndTime(null);
     }
   };
-  console.log(typeof date, date);
+
   return (
     <Modal
       title="수업 추가"
