@@ -35,7 +35,7 @@ export default function CalendarPage() {
   >("deleteSchedule");
   const [selectedDate, setSelectedDate] = useState<moment.Moment | null>(null);
   const [selectedSchedule, setSelectedSchedule] = useState<{
-    id: number;
+    id: string; // Change id type to string to match uuid
     name: string;
     startTime: string;
     endTime: string;
@@ -183,7 +183,7 @@ export default function CalendarPage() {
   };
 
   const handleEditClassClick = (schedule: {
-    id: number;
+    id: string; // Change id type to string to match uuid
     name: string;
     startTime: string;
     endTime: string;
@@ -251,7 +251,11 @@ export default function CalendarPage() {
                         key={idx}
                         className="bg-blue-100 p-1 rounded flex justify-between items-center cursor-pointer hover:bg-blue-200 active:bg-blue-300"
                         onClick={() =>
-                          handleEditClassClick({ ...schedule, password: "" })
+                          handleEditClassClick({
+                            ...schedule,
+                            password: "",
+                            id: schedule.id.toString(),
+                          })
                         }
                       >
                         <span>

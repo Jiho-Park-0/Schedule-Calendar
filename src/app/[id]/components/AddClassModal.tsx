@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import moment from "moment";
 import { doc, setDoc } from "firebase/firestore";
 import { scheduleCalendarFirestore } from "@/firebase";
+import { v4 as uuidv4 } from "uuid";
 
 interface AddClassModalProps {
   isOpen: boolean;
@@ -55,12 +56,9 @@ const AddClassModal: React.FC<AddClassModalProps> = ({
       const collectionPath = `profiles/${teacherId}/${date.format(
         "YYYY년 M월"
       )} ${weekOfMonth}`;
-      const docRef = doc(
-        scheduleCalendarFirestore,
-        collectionPath,
-        date.format("YYYY-MM-DD")
-      );
-
+      const uniqueId = uuidv4();
+      const docRef = doc(scheduleCalendarFirestore, collectionPath, uniqueId);
+      console.log(docRef);
       await setDoc(docRef, {
         name,
         password,
@@ -70,9 +68,7 @@ const AddClassModal: React.FC<AddClassModalProps> = ({
       });
 
       onClose();
-      // window.location.reload(); // 새로고침 제거
     } else {
-      // Handle validation error
       console.error("All fields are required");
     }
   };

@@ -1,35 +1,35 @@
-import { Modal, Input, DatePicker, Radio, Space, message } from "antd"; // message 추가
+import { Modal, Input, DatePicker, Radio, Space, message } from "antd";
 import TimePicker from "./TimePicker";
 import { useState, useEffect } from "react";
 import moment from "moment";
-import { doc, getDoc, deleteDoc, updateDoc } from "firebase/firestore"; // updateDoc 추가
-import { scheduleCalendarFirestore } from "@/firebase"; // Firestore import
+import { doc, getDoc, deleteDoc, updateDoc } from "firebase/firestore";
+import { scheduleCalendarFirestore } from "@/firebase";
 
 interface EditClassModalProps {
   isOpen: boolean;
   onClose: () => void;
   selectedSchedule: {
-    id: number;
+    id: string; // Change id type to string to match uuid
     name: string;
     startTime: string;
     endTime: string;
     date: string;
   } | null;
-  teacherId: string; // 추가
+  teacherId: string;
 }
 
 const EditClassModal: React.FC<EditClassModalProps> = ({
   isOpen,
   onClose,
   selectedSchedule,
-  teacherId, // 추가
+  teacherId,
 }) => {
-  const [name, setName] = useState<string>(""); // 추가
+  const [name, setName] = useState<string>("");
   const [startTime, setStartTime] = useState<string | null>(null);
   const [endTime, setEndTime] = useState<string | null>(null);
   const [date, setDate] = useState<moment.Moment | null>(null);
-  const [password, setPassword] = useState<string>(""); // 추가
-  const [action, setAction] = useState<"edit" | "delete">("edit"); // 추가
+  const [password, setPassword] = useState<string>("");
+  const [action, setAction] = useState<"edit" | "delete">("edit");
 
   const getWeekOfMonth = (date: moment.Moment | null) => {
     if (!date) return "";
@@ -62,7 +62,7 @@ const EditClassModal: React.FC<EditClassModalProps> = ({
           `profiles/${teacherId}/${
             scheduleDate.format("YYYY년 M월") + " " + weekOfMonth
           }`,
-          selectedSchedule.date
+          selectedSchedule.id // Use the unique ID
         );
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
@@ -89,7 +89,6 @@ const EditClassModal: React.FC<EditClassModalProps> = ({
     }
   }, [selectedSchedule]);
 
-  // 모달이 열릴 때마다 action과 password 초기화
   useEffect(() => {
     if (isOpen) {
       setAction("edit");
@@ -119,7 +118,7 @@ const EditClassModal: React.FC<EditClassModalProps> = ({
           `profiles/${teacherId}/${
             scheduleDate.format("YYYY년 M월") + " " + weekOfMonth
           }`,
-          selectedSchedule.date
+          selectedSchedule.id // Use the unique ID
         );
         await deleteDoc(docRef);
         message.success("수업이 삭제되었습니다.");
@@ -146,7 +145,7 @@ const EditClassModal: React.FC<EditClassModalProps> = ({
             `profiles/${teacherId}/${
               scheduleDate.format("YYYY년 M월") + " " + weekOfMonth
             }`,
-            selectedSchedule.date
+            selectedSchedule.id // Use the unique ID
           );
 
           await updateDoc(docRef, {
@@ -192,10 +191,7 @@ const EditClassModal: React.FC<EditClassModalProps> = ({
           endTime={endTime}
           onTimeSelect={handleTimeSelection}
         />
-        <Radio.Group
-          value={action} // 현재 action 상태를 반영
-          onChange={(e) => setAction(e.target.value)}
-        >
+        <Radio.Group value={action} onChange={(e) => setAction(e.target.value)}>
           <Space direction="vertical">
             <Radio value="edit">수정</Radio>
             <Radio value="delete">삭제</Radio>
