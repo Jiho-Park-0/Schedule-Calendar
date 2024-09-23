@@ -5,6 +5,7 @@ import moment from "moment";
 import { doc, setDoc, deleteDoc, getDoc } from "firebase/firestore";
 import { scheduleCalendarFirestore } from "@/firebase";
 import { v4 as uuidv4 } from "uuid";
+import axios from "axios";
 
 interface AddClassModalProps {
   isOpen: boolean;
@@ -64,6 +65,10 @@ const AddClassModal: React.FC<AddClassModalProps> = ({
       const collectionPath = `profiles/${teacherId}/${date.format(
         `YYYY년 ${getDisplayMonth(date)}월 ${weekOfMonth}`
       )}`;
+      const formattedPath = `${date.format(
+        `YYYY년 ${getDisplayMonth(date)}월 ${weekOfMonth}`
+      )}`;
+      console.log("Formatted Path:", formattedPath); // Add logging
 
       // Check and delete the "initial" document if it exists
       const initialDocRef = doc(
@@ -88,7 +93,16 @@ const AddClassModal: React.FC<AddClassModalProps> = ({
         dayOfWeek: date.format("dddd"), // Add day of the week
       });
 
-      onClose();
+      // Update profile.json via API
+      try {
+        await axios.post("/api/updateProfile", {
+          teacherId,
+          formattedPath,
+        });
+        onClose();
+      } catch (error) {
+        console.error("Error updating profile:", error);
+      }
     } else {
       console.error("All fields are required");
     }

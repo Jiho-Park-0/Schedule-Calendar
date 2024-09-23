@@ -2,14 +2,22 @@ import { Modal, Input, DatePicker, Radio, Space, message } from "antd";
 import TimePicker from "./TimePicker";
 import { useState, useEffect } from "react";
 import moment from "moment";
-import { doc, getDoc, deleteDoc, updateDoc } from "firebase/firestore";
+import {
+  doc,
+  getDoc,
+  deleteDoc,
+  updateDoc,
+  collection,
+  getDocs,
+} from "firebase/firestore";
 import { scheduleCalendarFirestore } from "@/firebase";
+import axios from "axios";
 
 interface EditClassModalProps {
   isOpen: boolean;
   onClose: () => void;
   selectedSchedule: {
-    id: string; // Change id type to string to match uuid
+    id: string;
     name: string;
     startTime: string;
     endTime: string;
@@ -29,6 +37,7 @@ const EditClassModal: React.FC<EditClassModalProps> = ({
   const [endTime, setEndTime] = useState<string | null>(null);
   const [date, setDate] = useState<moment.Moment | null>(null);
   const [password, setPassword] = useState<string>("");
+  const [teacherPassword, setTeacherPassword] = useState<string>(""); // New state for teacher's password
   const [action, setAction] = useState<"edit" | "delete">("edit");
 
   const getDisplayMonth = (weekStart: moment.Moment) => {
@@ -106,6 +115,7 @@ const EditClassModal: React.FC<EditClassModalProps> = ({
     if (isOpen) {
       setAction("edit");
       setPassword("");
+      setTeacherPassword(""); // Reset teacher's password
     }
   }, [isOpen]);
 
@@ -122,7 +132,7 @@ const EditClassModal: React.FC<EditClassModalProps> = ({
   };
 
   const handleDelete = async () => {
-    if (selectedSchedule && password) {
+    if (selectedSchedule && (password || teacherPassword)) {
       try {
         const scheduleDate = moment(selectedSchedule.date);
         const weekOfMonth = getWeekOfMonth(scheduleDate);
@@ -137,9 +147,52 @@ const EditClassModal: React.FC<EditClassModalProps> = ({
           `profiles/${teacherId}/${ref}`,
           selectedSchedule.id // Use the unique ID
         );
-        await deleteDoc(docRef);
-        message.success("수업이 삭제되었습니다.");
-        onClose();
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+
+          // Fetch the teacher's document to verify the teacher's password
+          const teacherDocRef = doc(
+            scheduleCalendarFirestore,
+            `profiles/${teacherId}`
+          );
+          const teacherDocSnap = await getDoc(teacherDocRef);
+
+          if (teacherDocSnap.exists()) {
+            const teacherData = teacherDocSnap.data();
+            if (
+              data.password === password ||
+              teacherPassword === teacherData.password // Check both passwords
+            ) {
+              await deleteDoc(docRef);
+
+              // Check if there are any remaining documents in the collection
+              const collectionRef = collection(
+                scheduleCalendarFirestore,
+                `profiles/${teacherId}/${ref}`
+              );
+              const collectionSnapshot = await getDocs(collectionRef);
+              if (collectionSnapshot.empty) {
+                // Update profile.json via API
+                await axios.post("/api/updateProfile", {
+                  teacherId,
+                  formattedPath: ref,
+                  action: "delete",
+                });
+              }
+
+              message.success("수업이 삭제되었습니다.");
+              onClose();
+            } else {
+              message.error("비밀번호가 올바르지 않습니다.");
+            }
+          } else {
+            message.error("선생님 정보를 찾을 수 없습니다.");
+          }
+        } else {
+          message.error("해당 수업 정보를 찾을 수 없습니다.");
+        }
       } catch (error) {
         message.error("수업 삭제에 실패했습니다.");
         console.error("Failed to delete class:", error);
@@ -218,13 +271,23 @@ const EditClassModal: React.FC<EditClassModalProps> = ({
           </Space>
         </Radio.Group>
         <div>
-          <label htmlFor="edit-password">비밀번호 입력</label>
+          <label htmlFor="edit-password">학생 비밀번호 입력</label>
           <Input
             id="edit-password"
             type="password"
             className="mt-2"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+          />
+        </div>
+        <div>
+          <label htmlFor="edit-teacher-password">관리자 비밀번호 입력</label>
+          <Input
+            id="edit-teacher-password"
+            type="password"
+            className="mt-2"
+            value={teacherPassword}
+            onChange={(e) => setTeacherPassword(e.target.value)}
           />
         </div>
       </div>

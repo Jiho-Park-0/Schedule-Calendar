@@ -211,7 +211,7 @@ export default function CalendarPage() {
             <Button>전체 시간표 표시</Button>
             <DeleteScheduleButton teacherId={id} />
             <LoadScheduleButton onClick={() => handleAction("loadSchedule")} />
-            <DeleteClassButton onClick={() => handleAction("deleteClass")} />
+            <DeleteClassButton teacherId={id} />
           </Space>
         </header>
 
@@ -287,6 +287,7 @@ export default function CalendarPage() {
         isOpen={isTeacherActionModalOpen}
         onClose={() => setIsTeacherActionModalOpen(false)}
         actionType={actionType}
+        teacherId={id}
       />
     </div>
   );

@@ -11,7 +11,7 @@ interface DeleteScheduleButtonProps {
 async function fetchCollections(teacherId: string) {
   const docRef = doc(scheduleCalendarFirestore, `profiles/${teacherId}`);
   const docSnap = await getDoc(docRef);
-  console.log(docSnap);
+
   if (docSnap.exists()) {
     const data = docSnap.data();
     const collectionsList = data.collections || []; // Assuming 'collections' field contains the list of sub-collections

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Modal, Input, message, Select } from "antd";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { doc, getDoc, deleteDoc } from "firebase/firestore";
 import { scheduleCalendarFirestore } from "@/firebase";
 
@@ -8,6 +8,7 @@ interface TeacherActionModalProps {
   isOpen: boolean;
   onClose: () => void;
   actionType: "deleteSchedule" | "loadSchedule" | "deleteClass";
+  teacherId: string; // Add teacherId prop
 }
 
 interface Profile {
@@ -21,17 +22,17 @@ const TeacherActionModal: React.FC<TeacherActionModalProps> = ({
   isOpen,
   onClose,
   actionType,
+  teacherId, // Destructure teacherId
 }) => {
   const [password, setPassword] = useState("");
   const [profile, setProfile] = useState<Profile | null>(null);
-  const { id } = useParams() as { id: string };
-  const [selectedMonth, setSelectedMonth] = useState<string>("");
+  const [selectedMonth, setSelectedMonth] = useState<string>(""); // Changed from "" to ""
   const router = useRouter(); // useRouter 추가
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const docRef = doc(scheduleCalendarFirestore, "profiles", id);
+        const docRef = doc(scheduleCalendarFirestore, "profiles", teacherId);
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
@@ -46,7 +47,7 @@ const TeacherActionModal: React.FC<TeacherActionModalProps> = ({
     };
 
     fetchProfile();
-  }, [id]);
+  }, [teacherId]);
 
   const handleOk = async () => {
     if (profile && profile.password === password) {
@@ -58,7 +59,9 @@ const TeacherActionModal: React.FC<TeacherActionModalProps> = ({
         message.success("스케줄 불러오기 성공");
       } else if (actionType === "deleteClass") {
         try {
-          await deleteDoc(doc(scheduleCalendarFirestore, "profiles", id));
+          await deleteDoc(
+            doc(scheduleCalendarFirestore, "profiles", teacherId)
+          );
           message.success("반 삭제 성공");
           onClose();
           router.push("/"); // 메인 페이지로 리다이렉션
