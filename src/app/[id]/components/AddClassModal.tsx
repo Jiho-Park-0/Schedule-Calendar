@@ -95,7 +95,7 @@ const AddClassModal: React.FC<AddClassModalProps> = ({
 
       // Update profile.json via API
       try {
-        await axios.post("/api/updateProfile", {
+        await axios.post("/api/addProfile", {
           teacherId,
           formattedPath,
         });

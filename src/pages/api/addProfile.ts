@@ -5,7 +5,7 @@ import path from "path";
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === "POST") {
     try {
-      const { teacherId, formattedPaths, action } = req.body;
+      const { teacherId, formattedPath } = req.body;
 
       const profilePath = path.resolve(process.cwd(), "public/profile.json");
       const profiles: { id: number; "시간표 리스트": string[] }[] = JSON.parse(
@@ -14,19 +14,8 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
 
       profiles.forEach((profile) => {
         if (profile.id === parseInt(teacherId, 10)) {
-          if (action === "delete") {
-            formattedPaths.forEach((formattedPath: string) => {
-              const index = profile["시간표 리스트"].indexOf(formattedPath);
-              if (index > -1) {
-                profile["시간표 리스트"].splice(index, 1);
-              }
-            });
-          } else {
-            formattedPaths.forEach((formattedPath: string) => {
-              if (!profile["시간표 리스트"].includes(formattedPath)) {
-                profile["시간표 리스트"].push(formattedPath);
-              }
-            });
+          if (!profile["시간표 리스트"].includes(formattedPath)) {
+            profile["시간표 리스트"].push(formattedPath);
           }
         }
       });

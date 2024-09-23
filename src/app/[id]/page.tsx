@@ -30,17 +30,17 @@ export default function CalendarPage() {
   const [isTeacherActionModalOpen, setIsTeacherActionModalOpen] =
     useState(false);
   const [currentWeek, setCurrentWeek] = useState(moment());
-  const [actionType, setActionType] = useState<
+  const [actionType] = useState<
     "deleteSchedule" | "loadSchedule" | "deleteClass"
   >("deleteSchedule");
   const [selectedDate, setSelectedDate] = useState<moment.Moment | null>(null);
   const [selectedSchedule, setSelectedSchedule] = useState<{
-    id: string; // Change id type to string to match uuid
+    id: string;
     name: string;
     startTime: string;
     endTime: string;
     date: string;
-  } | null>(null); // selectedSchedule 상태 추가
+  } | null>(null);
   const [scheduleData, setScheduleData] = useState<
     {
       id: number;
@@ -76,7 +76,6 @@ export default function CalendarPage() {
 
         if (docSnap.exists()) {
           const profileData = docSnap.data();
-
           setProfile(
             profileData as {
               id: string;
@@ -141,20 +140,12 @@ export default function CalendarPage() {
     fetchScheduleData();
   }, [id, currentWeek]);
 
-  const handleAction = (
-    type: "deleteSchedule" | "loadSchedule" | "deleteClass"
-  ) => {
-    setActionType(type);
-    setIsTeacherActionModalOpen(true);
-  };
-
   const getWeekOfMonth = (date: moment.Moment) => {
     const WEEK_KOR = ["1주차", "2주차", "3주차", "4주차", "5주차"];
     const weekDates = Array.from({ length: 7 }, (_, i) =>
       moment(date).startOf("week").add(i, "days")
     );
 
-    // weekDates[4]가 포함된 월을 기준으로 주차를 계산
     const referenceDate = weekDates[4];
     const firstDate = new Date(referenceDate.year(), referenceDate.month(), 1);
     const firstDayOfWeek = firstDate.getDay();
@@ -183,16 +174,23 @@ export default function CalendarPage() {
   };
 
   const handleEditClassClick = (schedule: {
-    id: string; // Change id type to string to match uuid
+    id: string;
     name: string;
     startTime: string;
     endTime: string;
     date: string;
     password: string;
   }) => {
-    setSelectedSchedule(schedule); // selectedSchedule 상태 업데이트
+    setSelectedSchedule(schedule);
     setIsEditClassModalOpen(true);
   };
+
+  const currentWeekString =
+    currentWeek.year() +
+    "년 " +
+    getDisplayMonth(currentWeek) +
+    " " +
+    getWeekOfMonth(currentWeek);
 
   return (
     <div className="min-h-screen bg-gray-100 p-8">
@@ -202,16 +200,22 @@ export default function CalendarPage() {
             <Title level={1}>
               {decodeURI(profile?.name || "")} 선생님의 시간표
             </Title>
-            <Text>
-              {currentWeek.year()}년 {getDisplayMonth(currentWeek)}{" "}
-              {getWeekOfMonth(currentWeek)} 주차 시간표
-            </Text>
+            <Text>{currentWeekString} 주차 시간표</Text>
           </div>
           <Space>
             <Button>전체 시간표 표시</Button>
-            <DeleteScheduleButton teacherId={id} />
-            <LoadScheduleButton onClick={() => handleAction("loadSchedule")} />
-            <DeleteClassButton teacherId={id} />
+            <DeleteScheduleButton
+              teacherId={id}
+              currentWeekString={currentWeekString}
+            />
+            <LoadScheduleButton
+              teacherId={id}
+              currentWeekString={currentWeekString}
+            />
+            <DeleteClassButton
+              teacherId={id}
+              currentWeekString={currentWeekString}
+            />
           </Space>
         </header>
 
@@ -279,7 +283,7 @@ export default function CalendarPage() {
       <EditClassModal
         isOpen={isEditClassModalOpen}
         onClose={() => setIsEditClassModalOpen(false)}
-        selectedSchedule={selectedSchedule} // selectedSchedule 전달
+        selectedSchedule={selectedSchedule}
         teacherId={id}
       />
       {/* 선생님 인증 모달 */}
@@ -288,6 +292,7 @@ export default function CalendarPage() {
         onClose={() => setIsTeacherActionModalOpen(false)}
         actionType={actionType}
         teacherId={id}
+        currentWeekString={currentWeekString}
       />
     </div>
   );

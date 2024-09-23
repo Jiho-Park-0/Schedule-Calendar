@@ -6,10 +6,12 @@ import TeacherActionModal from "@/app/[id]/components/TeacherActionModal";
 
 interface DeleteClassButtonProps {
   teacherId: string;
+  currentWeekString: string;
 }
 
 export default function DeleteClassButton({
   teacherId,
+  currentWeekString,
 }: DeleteClassButtonProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -31,6 +33,7 @@ export default function DeleteClassButton({
         onClose={handleCloseModal}
         actionType="deleteClass"
         teacherId={teacherId} // Pass the teacherId to the modal
+        currentWeekString={currentWeekString}
       />
     </>
   );
