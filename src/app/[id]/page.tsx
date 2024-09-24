@@ -23,7 +23,7 @@ import {
 import { scheduleCalendarFirestore } from "@/firebase";
 import { useRouter } from "next/navigation";
 
-const { Title, Text } = Typography;
+const { Title } = Typography;
 
 export default function CalendarPage() {
   const router = useRouter();
@@ -195,16 +195,18 @@ export default function CalendarPage() {
     getWeekOfMonth(currentWeek);
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
+    <div className="min-h-screen bg-gray-100 p-4 md:p-8">
       <div className="max-w-6xl mx-auto">
-        <header className="bg-white shadow rounded-lg p-6 mb-8 flex justify-between items-center">
+        <header className="bg-white shadow rounded-lg p-4 md:p-6 mb-4 md:mb-8 flex flex-col md:flex-row justify-between items-start md:items-center">
           <div>
-            <Title level={1}>
+            <h1 className="text-lg md:text-2xl lg:text-3xl font-bold">
               {decodeURI(profile?.name || "")} 선생님의 시간표
-            </Title>
-            <Text>{currentWeekString} 주차 시간표</Text>
+            </h1>
+            <p className="text-sm md:text-base lg:text-lg">
+              {currentWeekString} 주차 시간표
+            </p>
           </div>
-          <Space>
+          <Space className="mt-4 md:mt-0 ">
             <Button onClick={() => router.push(`/${id}/fullpage`)}>
               전체 시간표 표시
             </Button>
@@ -223,23 +225,28 @@ export default function CalendarPage() {
           </Space>
         </header>
 
-        <div className="bg-white shadow rounded-lg p-6">
+        <div className="bg-white shadow rounded-lg p-4 md:p-6">
           <div className="flex justify-between items-center mb-4">
             <Button onClick={() => moveWeek(-1)} icon={<LeftOutlined />} />
-            <Title level={2}>주간 시간표</Title>
+            <Title level={2} className="text-lg md:text-xl lg:text-2xl">
+              주간 시간표
+            </Title>
             <Button onClick={() => moveWeek(1)} icon={<RightOutlined />} />
           </div>
-          <div className="grid grid-cols-7 gap-4">
-            {weekDays.map((day, index) => (
-              <div key={day} className="text-center">
-                <div className="font-semibold">{day}</div>
-                <div className="text-sm text-gray-500">
-                  {weekDates[index].date()}
-                </div>
-              </div>
-            ))}
+          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2 md:gap-4">
             {weekDates.map((date, index) => (
-              <div key={index} className="border p-2 min-h-[200px]">
+              <div
+                key={index}
+                className="border p-2 min-h-[150px] md:min-h-[200px]"
+              >
+                <div className="text-center mb-2">
+                  <div className="font-semibold text-sm md:text-base">
+                    {weekDays[index]}
+                  </div>
+                  <div className="text-xs md:text-sm text-gray-500">
+                    {date.date()}
+                  </div>
+                </div>
                 <Button
                   size="small"
                   className="w-full mb-2"
@@ -247,7 +254,7 @@ export default function CalendarPage() {
                 >
                   추가
                 </Button>
-                <div className="text-sm space-y-1">
+                <div className="text-xs md:text-sm space-y-1">
                   {scheduleData
                     .filter(
                       (schedule) => schedule.date === date.format("YYYY-MM-DD")

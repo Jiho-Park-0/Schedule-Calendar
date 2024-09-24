@@ -34,6 +34,7 @@ interface Schedule {
 interface ScheduleData {
   [date: string]: Schedule[];
 }
+
 export default function FullPage() {
   const params = useParams();
   const id = params?.id as string;
@@ -127,13 +128,16 @@ export default function FullPage() {
 
       days.push(
         <div key={i} className="border p-2 h-auto">
-          <div className="font-bold">{i}</div>
+          <div className="font-bold text-sm md:text-base lg:text-lg">{i}</div>
           {daySchedules.map((schedule, index) => (
             <div
               key={index}
-              className="text-xs whitespace-nowrap overflow-hidden text-ellipsis"
+              className="text-[10px] sm:text-xs md:text-sm lg:text-base whitespace-normal break-words bg-blue-100 p-1 mt-1 rounded"
             >
-              {schedule.name} : {schedule.startTime} - {schedule.endTime}
+              <div className="font-semibold">{schedule.name}</div>
+              <div>
+                {schedule.startTime} - {schedule.endTime}
+              </div>
             </div>
           ))}
         </div>
@@ -144,31 +148,42 @@ export default function FullPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4">
+    <div className="min-h-screen bg-gray-100 p-4 md:p-8">
       <div className="max-w-full mx-auto">
-        <header className="bg-white shadow rounded-lg p-4 mb-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900">전체 시간표</h1>
+        <header className="bg-white shadow rounded-lg p-4 md:p-6 mb-4 flex justify-between items-center">
+          <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900">
+            전체 시간표
+          </h1>
           <div className="flex items-center space-x-2">
-            <Button onClick={() => (window.location.href = `/${id}`)}>
+            <Button
+              className="text-sm md:text-base lg:text-lg"
+              onClick={() => (window.location.href = `/${id}`)}
+            >
               돌아가기
             </Button>
           </div>
         </header>
 
-        <div className="bg-white shadow rounded-lg p-4">
+        <div className="bg-white shadow rounded-lg p-4 md:p-6">
           <div className="flex justify-between items-center mb-4">
-            <Button onClick={() => changeMonth(-1)}>
+            <Button
+              className="text-sm md:text-base lg:text-lg"
+              onClick={() => changeMonth(-1)}
+            >
               <LeftOutlined className="h-4 w-4" />
             </Button>
-            <h2 className="text-xl font-semibold">
+            <h2 className="text-lg md:text-xl lg:text-2xl font-semibold">
               {currentYear}년 {months[currentMonth]}
             </h2>
-            <Button onClick={() => changeMonth(1)}>
+            <Button
+              className="text-sm md:text-base lg:text-lg"
+              onClick={() => changeMonth(1)}
+            >
               <RightOutlined className="h-4 w-4" />
             </Button>
           </div>
 
-          <div className="grid grid-cols-7 gap-1 mb-2 text-sm">
+          <div className="grid grid-cols-7 gap-1 mb-2 text-xs md:text-sm lg:text-base">
             {["일", "월", "화", "수", "목", "금", "토"].map((day) => (
               <div key={day} className="text-center font-semibold">
                 {day}
@@ -176,7 +191,7 @@ export default function FullPage() {
             ))}
           </div>
 
-          <div className="grid grid-cols-7 gap-1 text-xs">
+          <div className="grid grid-cols-7 gap-1 text-xs md:text-sm lg:text-base">
             {renderCalendar()}
           </div>
         </div>

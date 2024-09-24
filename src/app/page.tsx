@@ -202,15 +202,19 @@ export default function MainPage() {
     <div className="min-h-screen bg-gray-100 p-8">
       <div className="max-w-4xl mx-auto">
         <header className="bg-white shadow rounded-lg p-6 mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">학원 스케줄러</h1>
-          <p className="mt-2 text-gray-600">
+          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900">
+            학원 스케줄러
+          </h1>
+          <p className="mt-2 text-sm md:text-base lg:text-lg text-gray-600">
             선생님들의 반 목록입니다. 클릭하여 시간표를 확인하세요.
           </p>
         </header>
 
         <div className="bg-white shadow rounded-lg p-6">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-semibold text-gray-900">반 목록</h2>
+            <h2 className="text-xl md:text-2xl lg:text-3xl font-semibold text-gray-900">
+              반 목록
+            </h2>
             <Button
               type="primary"
               onClick={() => setIsCreateRoomModalOpen(true)}
@@ -256,7 +260,7 @@ export default function MainPage() {
           style={{ marginBottom: 16 }}
         />
         <div>
-          <span>반 색상</span>
+          <span className="text-sm md:text-base lg:text-lg">반 색상</span>
           <div className="grid grid-cols-6 gap-2 mt-2">
             {colorOptions.map((color) => (
               <button
