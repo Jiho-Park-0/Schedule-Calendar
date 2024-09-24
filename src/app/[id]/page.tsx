@@ -200,7 +200,7 @@ export default function CalendarPage() {
                           })
                         }
                       >
-                        <span className="text-sm font-medium text-gray-700">
+                        <span className="text-sm font-medium text-white">
                           {schedule.name} <br />
                           {schedule.startTime}-{schedule.endTime}
                         </span>
