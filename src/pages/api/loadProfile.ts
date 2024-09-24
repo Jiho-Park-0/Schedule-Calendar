@@ -7,12 +7,14 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     const { teacherId } = req.query;
 
     const filePath = path.join(process.cwd(), "public", "profile.json");
+
     const fileData = fs.readFileSync(filePath, "utf8");
     const profiles = JSON.parse(fileData);
 
     const profile = profiles.find(
       (p: { id: number }) => p.id === parseInt(teacherId as string, 10)
     );
+
     if (!profile) {
       return res.status(404).json({ error: "Profile not found" });
     }

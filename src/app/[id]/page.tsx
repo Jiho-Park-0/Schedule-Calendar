@@ -21,10 +21,12 @@ import {
   onSnapshot,
 } from "firebase/firestore";
 import { scheduleCalendarFirestore } from "@/firebase";
+import { useRouter } from "next/navigation";
 
 const { Title, Text } = Typography;
 
 export default function CalendarPage() {
+  const router = useRouter();
   const [isAddClassModalOpen, setIsAddClassModalOpen] = useState(false);
   const [isEditClassModalOpen, setIsEditClassModalOpen] = useState(false);
   const [isTeacherActionModalOpen, setIsTeacherActionModalOpen] =
@@ -203,7 +205,9 @@ export default function CalendarPage() {
             <Text>{currentWeekString} 주차 시간표</Text>
           </div>
           <Space>
-            <Button>전체 시간표 표시</Button>
+            <Button onClick={() => router.push(`/${id}/fullpage`)}>
+              전체 시간표 표시
+            </Button>
             <DeleteScheduleButton
               teacherId={id}
               currentWeekString={currentWeekString}
@@ -261,8 +265,8 @@ export default function CalendarPage() {
                         }
                       >
                         <span>
-                          {schedule.name} {schedule.startTime}-
-                          {schedule.endTime}
+                          {schedule.name} <br />
+                          {schedule.startTime}-{schedule.endTime}
                         </span>
                       </div>
                     ))}
