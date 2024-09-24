@@ -130,6 +130,55 @@ const EditClassModal: React.FC<EditClassModalProps> = ({
   return (
     <Modal title="수업 수정" open={isOpen} onCancel={onClose} onOk={handleSave}>
       <div className="py-4 space-y-4">
+        <div>
+          <label htmlFor="edit-student-name">이름</label>
+          <Input
+            id="edit-student-name"
+            className="mt-2"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        </div>
+        <div>
+          <label htmlFor="edit-class-day">요일</label>
+          <Select
+            id="edit-class-day"
+            className="mt-2 w-full"
+            value={day}
+            onChange={(value) => setDay(value)}
+          >
+            <Select.Option value="일">일</Select.Option>
+            <Select.Option value="월">월</Select.Option>
+            <Select.Option value="화">화</Select.Option>
+            <Select.Option value="수">수</Select.Option>
+            <Select.Option value="목">목</Select.Option>
+            <Select.Option value="금">금</Select.Option>
+            <Select.Option value="토">토</Select.Option>
+          </Select>
+        </div>
+        <TimePicker
+          startTime={startTime}
+          endTime={endTime}
+          onTimeSelect={handleTimeSelection}
+        />
+        <div>
+          <span className="text-sm md:text-base lg:text-lg">스케줄 색상</span>
+          <div className="grid grid-cols-6 gap-2 mt-2">
+            {colorOptions.map((color) => (
+              <button
+                key={color}
+                className={`w-8 h-8 rounded-full border-2 ${
+                  backgroundColor === color
+                    ? "border-black"
+                    : "border-transparent"
+                }`}
+                style={{ backgroundColor: color }}
+                onClick={() => setBackgroundColor(color)}
+                aria-label={`Select color ${color}`}
+              />
+            ))}
+          </div>
+        </div>
         <Radio.Group
           onChange={(e) => setAction(e.target.value)}
           value={action}
@@ -138,61 +187,6 @@ const EditClassModal: React.FC<EditClassModalProps> = ({
           <Radio value="edit">수정</Radio>
           <Radio value="delete">삭제</Radio>
         </Radio.Group>
-        {action === "edit" && (
-          <>
-            <div>
-              <label htmlFor="edit-student-name">이름</label>
-              <Input
-                id="edit-student-name"
-                className="mt-2"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
-            </div>
-            <div>
-              <label htmlFor="edit-class-day">요일</label>
-              <Select
-                id="edit-class-day"
-                className="mt-2 w-full"
-                value={day}
-                onChange={(value) => setDay(value)}
-              >
-                <Select.Option value="일">일</Select.Option>
-                <Select.Option value="월">월</Select.Option>
-                <Select.Option value="화">화</Select.Option>
-                <Select.Option value="수">수</Select.Option>
-                <Select.Option value="목">목</Select.Option>
-                <Select.Option value="금">금</Select.Option>
-                <Select.Option value="토">토</Select.Option>
-              </Select>
-            </div>
-            <TimePicker
-              startTime={startTime}
-              endTime={endTime}
-              onTimeSelect={handleTimeSelection}
-            />
-            <div>
-              <span className="text-sm md:text-base lg:text-lg">
-                스케줄 색상
-              </span>
-              <div className="grid grid-cols-6 gap-2 mt-2">
-                {colorOptions.map((color) => (
-                  <button
-                    key={color}
-                    className={`w-8 h-8 rounded-full border-2 ${
-                      backgroundColor === color
-                        ? "border-black"
-                        : "border-transparent"
-                    }`}
-                    style={{ backgroundColor: color }}
-                    onClick={() => setBackgroundColor(color)}
-                    aria-label={`Select color ${color}`}
-                  />
-                ))}
-              </div>
-            </div>
-          </>
-        )}
       </div>
     </Modal>
   );

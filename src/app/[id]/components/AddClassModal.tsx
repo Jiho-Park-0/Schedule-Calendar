@@ -1,4 +1,4 @@
-import { Modal, Input, Select } from "antd";
+import { Modal, Input, Select, message } from "antd";
 import TimePicker from "./TimePicker";
 import { useState, useEffect } from "react";
 import { doc, setDoc } from "firebase/firestore";
@@ -80,7 +80,7 @@ const AddClassModal: React.FC<AddClassModalProps> = ({
 
       onClose();
     } else {
-      console.error("All fields are required");
+      message.error("모든 정보를 입력해 주세요.");
     }
   };
 
@@ -118,6 +118,7 @@ const AddClassModal: React.FC<AddClassModalProps> = ({
           endTime={endTime}
           onTimeSelect={handleTimeSelection}
         />
+
         <div>
           <span className="text-sm md:text-base lg:text-lg">스케줄 색상</span>
           <div className="grid grid-cols-6 gap-2 mt-2">
