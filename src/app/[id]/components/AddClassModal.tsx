@@ -1,43 +1,39 @@
-import { Modal, Input, DatePicker } from "antd";
+import { Modal, Input, Select } from "antd";
 import TimePicker from "./TimePicker";
 import { useState, useEffect } from "react";
-import moment from "moment";
-import { doc, setDoc, deleteDoc, getDoc } from "firebase/firestore";
+import { doc, setDoc } from "firebase/firestore";
 import { scheduleCalendarFirestore } from "@/firebase";
 import { v4 as uuidv4 } from "uuid";
-import axios from "axios";
 
 interface AddClassModalProps {
   isOpen: boolean;
   onClose: () => void;
-  selectedDate: moment.Moment | null;
+  selectedDay: string | null;
   teacherId: string;
 }
 
 const AddClassModal: React.FC<AddClassModalProps> = ({
   isOpen,
   onClose,
-  selectedDate,
+  selectedDay,
   teacherId,
 }) => {
   const [name, setName] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
   const [startTime, setStartTime] = useState<string | null>(null);
   const [endTime, setEndTime] = useState<string | null>(null);
-  const [date, setDate] = useState<moment.Moment | null>(null);
+  const [day, setDay] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isOpen) {
       setName("");
-      setPassword("");
       setStartTime(null);
       setEndTime(null);
-      setDate(null);
+      setDay(null);
     }
-    if (isOpen && selectedDate) {
-      setDate(selectedDate);
+    if (isOpen && selectedDay) {
+      setDay(selectedDay);
     }
-  }, [isOpen, selectedDate]);
+  }, [isOpen, selectedDay]);
 
   const handleTimeSelection = (time: string) => {
     if (!startTime || (startTime && endTime)) {
@@ -51,81 +47,23 @@ const AddClassModal: React.FC<AddClassModalProps> = ({
     }
   };
 
-  const getDisplayMonth = (weekStart: moment.Moment) => {
-    const weekDates = Array.from({ length: 7 }, (_, i) =>
-      moment(weekStart).startOf("week").add(i, "days")
-    );
-    const referenceDate = weekDates[4];
-    return `${referenceDate.format("M")}`;
-  };
-
   const handleSave = async () => {
-    if (name && password && startTime && endTime && date) {
-      const weekOfMonth = getWeekOfMonth(date);
-      const collectionPath = `profiles/${teacherId}/${date.format(
-        `YYYY년 ${getDisplayMonth(date)}월 ${weekOfMonth}`
-      )}`;
-      const formattedPath = `${date.format(
-        `YYYY년 ${getDisplayMonth(date)}월 ${weekOfMonth}`
-      )}`;
-      console.log("Formatted Path:", formattedPath); // Add logging
-
-      // Check and delete the "initial" document if it exists
-      const initialDocRef = doc(
-        scheduleCalendarFirestore,
-        collectionPath,
-        "initial"
-      );
-      const initialDocSnapshot = await getDoc(initialDocRef);
-      if (initialDocSnapshot.exists()) {
-        await deleteDoc(initialDocRef);
-      }
-
+    if (name && startTime && endTime && day) {
+      const collectionPath = `profiles/${teacherId}/student`;
       const uniqueId = uuidv4();
       const docRef = doc(scheduleCalendarFirestore, collectionPath, uniqueId);
 
       await setDoc(docRef, {
         name,
-        password,
         startTime,
         endTime,
-        date: date.format("YYYY-MM-DD"),
-        dayOfWeek: date.format("dddd"), // Add day of the week
+        day,
       });
 
-      // Update profile.json via API
-      try {
-        await axios.post("/api/addProfile", {
-          teacherId,
-          formattedPath,
-        });
-        onClose();
-      } catch (error) {
-        console.error("Error updating profile:", error);
-      }
+      onClose();
     } else {
       console.error("All fields are required");
     }
-  };
-
-  const getWeekOfMonth = (date: moment.Moment) => {
-    const WEEK_KOR = ["1주차", "2주차", "3주차", "4주차", "5주차"];
-    const weekDates = Array.from({ length: 7 }, (_, i) =>
-      moment(date).startOf("week").add(i, "days")
-    );
-
-    const referenceDate = weekDates[4];
-    const firstDate = new Date(referenceDate.year(), referenceDate.month(), 1);
-    const firstDayOfWeek = firstDate.getDay();
-
-    let firstSunday = 1 - firstDayOfWeek;
-    if (firstSunday > 1) {
-      firstSunday -= 7;
-    }
-
-    const weekNum = Math.ceil((referenceDate.date() - firstSunday) / 7);
-
-    return WEEK_KOR[weekNum - 1];
   };
 
   return (
@@ -141,30 +79,27 @@ const AddClassModal: React.FC<AddClassModalProps> = ({
           />
         </div>
         <div>
-          <label htmlFor="class-date">날짜</label>
-          <DatePicker
-            id="class-date"
-            className="mt-2"
-            value={date}
-            onChange={(date) => setDate(date)}
-          />
+          <label htmlFor="class-day">요일</label>
+          <Select
+            id="class-day"
+            className="mt-2 w-full"
+            value={day}
+            onChange={(value) => setDay(value)}
+          >
+            <Select.Option value="일">일</Select.Option>
+            <Select.Option value="월">월</Select.Option>
+            <Select.Option value="화">화</Select.Option>
+            <Select.Option value="수">수</Select.Option>
+            <Select.Option value="목">목</Select.Option>
+            <Select.Option value="금">금</Select.Option>
+            <Select.Option value="토">토</Select.Option>
+          </Select>
         </div>
         <TimePicker
           startTime={startTime}
           endTime={endTime}
           onTimeSelect={handleTimeSelection}
         />
-        <div>
-          <label htmlFor="student-password">비밀번호 (4자리)</label>
-          <Input
-            id="student-password"
-            type="password"
-            maxLength={4}
-            className="mt-2"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </div>
       </div>
     </Modal>
   );

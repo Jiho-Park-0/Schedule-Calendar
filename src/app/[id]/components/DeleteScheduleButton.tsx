@@ -6,12 +6,10 @@ import TeacherActionModal from "./TeacherActionModal";
 
 interface DeleteScheduleButtonProps {
   teacherId: string;
-  currentWeekString: string;
 }
 
 export default function DeleteScheduleButton({
   teacherId,
-  currentWeekString,
 }: DeleteScheduleButtonProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -29,9 +27,7 @@ export default function DeleteScheduleButton({
       <TeacherActionModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-        actionType="deleteSchedule"
         teacherId={teacherId}
-        currentWeekString={currentWeekString}
       />
     </>
   );

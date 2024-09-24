@@ -2,65 +2,49 @@
 
 import { useEffect, useState } from "react";
 import { Button, Space, Typography } from "antd";
-import { LeftOutlined, RightOutlined } from "@ant-design/icons";
-import moment from "moment";
+// import { LeftOutlined, RightOutlined } from "@ant-design/icons";
+// import moment from "moment";
 import "moment/locale/ko"; // 한국어 로케일을 사용하기 위해 추가
 import { useParams } from "next/navigation";
 import AddClassModal from "@/app/[id]/components/AddClassModal";
 import EditClassModal from "@/app/[id]/components/EditClassModal";
 import TeacherActionModal from "@/app/[id]/components/TeacherActionModal";
-import DeleteScheduleButton from "@/app/[id]/components/DeleteScheduleButton";
-import LoadScheduleButton from "@/app/[id]/components/LoadScheduleButton";
+
 import DeleteClassButton from "@/app/[id]/components/DeleteClassButton";
-import {
-  doc,
-  getDoc,
-  collection,
-  query,
-  where,
-  onSnapshot,
-} from "firebase/firestore";
+import { doc, getDoc, collection, query, onSnapshot } from "firebase/firestore";
 import { scheduleCalendarFirestore } from "@/firebase";
-import { useRouter } from "next/navigation";
 
 const { Title } = Typography;
 
 export default function CalendarPage() {
-  const router = useRouter();
   const [isAddClassModalOpen, setIsAddClassModalOpen] = useState(false);
   const [isEditClassModalOpen, setIsEditClassModalOpen] = useState(false);
   const [isTeacherActionModalOpen, setIsTeacherActionModalOpen] =
     useState(false);
-  const [currentWeek, setCurrentWeek] = useState(moment());
-  const [actionType] = useState<
-    "deleteSchedule" | "loadSchedule" | "deleteClass"
-  >("deleteSchedule");
-  const [selectedDate, setSelectedDate] = useState<moment.Moment | null>(null);
+
+  const [selectedDay, setSelectedDay] = useState<string | null>(null);
   const [selectedSchedule, setSelectedSchedule] = useState<{
     id: string;
     name: string;
     startTime: string;
     endTime: string;
-    date: string;
+    day: string;
   } | null>(null);
   const [scheduleData, setScheduleData] = useState<
     {
-      id: number;
+      id: string;
       name: string;
       startTime: string;
       endTime: string;
-      date: string;
+      day: string;
     }[]
   >([]);
 
   const weekDays = ["일", "월", "화", "수", "목", "금", "토"];
-  const weekDates = Array.from({ length: 7 }, (_, i) =>
-    moment(currentWeek).startOf("week").add(i, "days")
-  );
 
-  const moveWeek = (direction: number) => {
-    setCurrentWeek(currentWeek.clone().add(direction, "weeks"));
-  };
+  // const moveWeek = (direction: number) => {
+  //   setCurrentWeek(currentWeek.clone().add(direction, "weeks"));
+  // };
 
   const { id } = useParams() as { id: string };
   const [profile, setProfile] = useState<{
@@ -101,18 +85,8 @@ export default function CalendarPage() {
   useEffect(() => {
     const fetchScheduleData = async () => {
       try {
-        const startOfWeek = currentWeek.startOf("week").format("YYYY-MM-DD");
-        const endOfWeek = currentWeek.endOf("week").format("YYYY-MM-DD");
-
         const q = query(
-          collection(
-            scheduleCalendarFirestore,
-            `profiles/${id}/${currentWeek.format(
-              "YYYY년 M월"
-            )} ${getWeekOfMonth(currentWeek)}`
-          ),
-          where("date", ">=", startOfWeek),
-          where("date", "<=", endOfWeek)
+          collection(scheduleCalendarFirestore, `profiles/${id}/student`)
         );
 
         const unsubscribe = onSnapshot(q, (querySnapshot) => {
@@ -124,11 +98,11 @@ export default function CalendarPage() {
           }));
           setScheduleData(
             data as unknown as {
-              id: number;
+              id: string;
               name: string;
               startTime: string;
               endTime: string;
-              date: string;
+              day: string;
             }[]
           );
         });
@@ -140,38 +114,10 @@ export default function CalendarPage() {
     };
 
     fetchScheduleData();
-  }, [id, currentWeek]);
+  }, [id]);
 
-  const getWeekOfMonth = (date: moment.Moment) => {
-    const WEEK_KOR = ["1주차", "2주차", "3주차", "4주차", "5주차"];
-    const weekDates = Array.from({ length: 7 }, (_, i) =>
-      moment(date).startOf("week").add(i, "days")
-    );
-
-    const referenceDate = weekDates[4];
-    const firstDate = new Date(referenceDate.year(), referenceDate.month(), 1);
-    const firstDayOfWeek = firstDate.getDay();
-
-    let firstSunday = 1 - firstDayOfWeek;
-    if (firstSunday > 1) {
-      firstSunday -= 7;
-    }
-
-    const weekNum = Math.ceil((referenceDate.date() - firstSunday) / 7);
-
-    return WEEK_KOR[weekNum - 1];
-  };
-
-  const getDisplayMonth = (weekStart: moment.Moment) => {
-    const weekDates = Array.from({ length: 7 }, (_, i) =>
-      moment(weekStart).startOf("week").add(i, "days")
-    );
-    const referenceDate = weekDates[4];
-    return `${referenceDate.format("M")}월`;
-  };
-
-  const handleAddClassClick = (date: moment.Moment) => {
-    setSelectedDate(date);
+  const handleAddClassClick = (day: string) => {
+    setSelectedDay(day);
     setIsAddClassModalOpen(true);
   };
 
@@ -180,19 +126,13 @@ export default function CalendarPage() {
     name: string;
     startTime: string;
     endTime: string;
-    date: string;
-    password: string;
+    day: string;
   }) => {
     setSelectedSchedule(schedule);
     setIsEditClassModalOpen(true);
   };
 
-  const currentWeekString =
-    currentWeek.year() +
-    "년 " +
-    getDisplayMonth(currentWeek) +
-    " " +
-    getWeekOfMonth(currentWeek);
+  const currentWeekString = "2024-07-08";
 
   return (
     <div className="min-h-screen bg-gray-100 p-4 md:p-8">
@@ -202,22 +142,16 @@ export default function CalendarPage() {
             <h1 className="text-lg md:text-2xl lg:text-3xl font-bold">
               {decodeURI(profile?.name || "")} 선생님의 시간표
             </h1>
-            <p className="text-sm md:text-base lg:text-lg">
-              {currentWeekString} 주차 시간표
-            </p>
           </div>
           <Space className="mt-4 md:mt-0 ">
-            <Button onClick={() => router.push(`/${id}/fullpage`)}>
-              전체 시간표 표시
-            </Button>
-            <DeleteScheduleButton
+            {/* <DeleteScheduleButton
               teacherId={id}
               currentWeekString={currentWeekString}
-            />
-            <LoadScheduleButton
+            /> */}
+            {/* <LoadScheduleButton
               teacherId={id}
               currentWeekString={currentWeekString}
-            />
+            /> */}
             <DeleteClassButton
               teacherId={id}
               currentWeekString={currentWeekString}
@@ -226,39 +160,35 @@ export default function CalendarPage() {
         </header>
 
         <div className="bg-white shadow rounded-lg p-4 md:p-6">
-          <div className="flex justify-between items-center mb-4">
-            <Button onClick={() => moveWeek(-1)} icon={<LeftOutlined />} />
-            <Title level={2} className="text-lg md:text-xl lg:text-2xl">
+          <div className="flex justify-center items-center mb-4">
+            <Title
+              level={2}
+              className="text-lg md:text-xl lg:text-2xl text-center"
+            >
               주간 시간표
             </Title>
-            <Button onClick={() => moveWeek(1)} icon={<RightOutlined />} />
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2 md:gap-4">
-            {weekDates.map((date, index) => (
+            {weekDays.map((day, index) => (
               <div
                 key={index}
                 className="border p-2 min-h-[150px] md:min-h-[200px]"
               >
                 <div className="text-center mb-2">
                   <div className="font-semibold text-sm md:text-base">
-                    {weekDays[index]}
-                  </div>
-                  <div className="text-xs md:text-sm text-gray-500">
-                    {date.date()}
+                    {day}
                   </div>
                 </div>
                 <Button
                   size="small"
                   className="w-full mb-2"
-                  onClick={() => handleAddClassClick(date)}
+                  onClick={() => handleAddClassClick(day)}
                 >
                   추가
                 </Button>
                 <div className="text-xs md:text-sm space-y-1">
                   {scheduleData
-                    .filter(
-                      (schedule) => schedule.date === date.format("YYYY-MM-DD")
-                    )
+                    .filter((schedule) => schedule.day === day)
                     .map((schedule, idx) => (
                       <div
                         key={idx}
@@ -266,7 +196,6 @@ export default function CalendarPage() {
                         onClick={() =>
                           handleEditClassClick({
                             ...schedule,
-                            password: "",
                             id: schedule.id.toString(),
                           })
                         }
@@ -287,7 +216,7 @@ export default function CalendarPage() {
       <AddClassModal
         isOpen={isAddClassModalOpen}
         onClose={() => setIsAddClassModalOpen(false)}
-        selectedDate={selectedDate}
+        selectedDay={selectedDay}
         teacherId={id}
       />
       {/* 수업 수정 모달 */}
@@ -301,9 +230,7 @@ export default function CalendarPage() {
       <TeacherActionModal
         isOpen={isTeacherActionModalOpen}
         onClose={() => setIsTeacherActionModalOpen(false)}
-        actionType={actionType}
         teacherId={id}
-        currentWeekString={currentWeekString}
       />
     </div>
   );
