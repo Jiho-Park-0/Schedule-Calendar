@@ -51,7 +51,6 @@ export default function MainPage() {
         );
         const querySnapshot = await getDocs(q);
         const data = querySnapshot.docs.map((doc) => {
-          console.log(doc.data());
           const { id, name, password, backgroundColor } = doc.data();
           return { id, name, password, backgroundColor };
         });
