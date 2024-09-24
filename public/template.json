@@ -1,0 +1,32 @@
+{
+  "teacherName": "이광현",
+  "schedule": {
+    "2023-09": {
+      "week1": [
+        {
+          "studentName": "학생1",
+          "date": "2023-09-01",
+          "startTime": "13:00",
+          "endTime": "14:00",
+          "password": "1234"
+        },
+        {
+          "studentName": "학생2",
+          "date": "2023-09-02",
+          "startTime": "15:00",
+          "endTime": "16:00",
+          "password": "5678"
+        }
+      ],
+      "week2": [],
+      "week3": [],
+      "week4": []
+    },
+    "2023-10": {
+      "week1": [],
+      "week2": [],
+      "week3": [],
+      "week4": []
+    }
+  }
+}
