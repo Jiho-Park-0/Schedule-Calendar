@@ -11,7 +11,6 @@ interface LoadScheduleButtonProps {
 
 export default function LoadScheduleButton({
   teacherId,
-  currentWeekString,
 }: LoadScheduleButtonProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -29,9 +28,7 @@ export default function LoadScheduleButton({
       <TeacherActionModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-        actionType="loadSchedule"
         teacherId={teacherId}
-        currentWeekString={currentWeekString}
       />
     </>
   );
