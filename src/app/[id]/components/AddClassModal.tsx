@@ -5,6 +5,21 @@ import { doc, setDoc } from "firebase/firestore";
 import { scheduleCalendarFirestore } from "@/firebase";
 import { v4 as uuidv4 } from "uuid";
 
+const colorOptions = [
+  "#1890ff",
+  "#52c41a",
+  "#faad14",
+  "#f5222d",
+  "#722ed1",
+  "#13c2c2",
+  "#eb2f96",
+  "#fa8c16",
+  "#a0d911",
+  "#2f54eb",
+  "#fadb14",
+  "#eb4d4b",
+];
+
 interface AddClassModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -22,6 +37,7 @@ const AddClassModal: React.FC<AddClassModalProps> = ({
   const [startTime, setStartTime] = useState<string | null>(null);
   const [endTime, setEndTime] = useState<string | null>(null);
   const [day, setDay] = useState<string | null>(null);
+  const [backgroundColor, setBackgroundColor] = useState(colorOptions[0]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -29,6 +45,7 @@ const AddClassModal: React.FC<AddClassModalProps> = ({
       setStartTime(null);
       setEndTime(null);
       setDay(null);
+      setBackgroundColor(colorOptions[0]);
     }
     if (isOpen && selectedDay) {
       setDay(selectedDay);
@@ -58,6 +75,7 @@ const AddClassModal: React.FC<AddClassModalProps> = ({
         startTime,
         endTime,
         day,
+        backgroundColor,
       });
 
       onClose();
@@ -100,6 +118,24 @@ const AddClassModal: React.FC<AddClassModalProps> = ({
           endTime={endTime}
           onTimeSelect={handleTimeSelection}
         />
+        <div>
+          <span className="text-sm md:text-base lg:text-lg">스케줄 색상</span>
+          <div className="grid grid-cols-6 gap-2 mt-2">
+            {colorOptions.map((color) => (
+              <button
+                key={color}
+                className={`w-8 h-8 rounded-full border-2 ${
+                  backgroundColor === color
+                    ? "border-black"
+                    : "border-transparent"
+                }`}
+                style={{ backgroundColor: color }}
+                onClick={() => setBackgroundColor(color)}
+                aria-label={`Select color ${color}`}
+              />
+            ))}
+          </div>
+        </div>
       </div>
     </Modal>
   );

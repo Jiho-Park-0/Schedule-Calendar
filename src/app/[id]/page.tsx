@@ -29,6 +29,7 @@ export default function CalendarPage() {
     startTime: string;
     endTime: string;
     day: string;
+    backgroundColor: string;
   } | null>(null);
   const [scheduleData, setScheduleData] = useState<
     {
@@ -37,6 +38,7 @@ export default function CalendarPage() {
       startTime: string;
       endTime: string;
       day: string;
+      backgroundColor: string;
     }[]
   >([]);
 
@@ -103,6 +105,7 @@ export default function CalendarPage() {
               startTime: string;
               endTime: string;
               day: string;
+              backgroundColor: string;
             }[]
           );
         });
@@ -127,6 +130,7 @@ export default function CalendarPage() {
     startTime: string;
     endTime: string;
     day: string;
+    backgroundColor: string;
   }) => {
     setSelectedSchedule(schedule);
     setIsEditClassModalOpen(true);
@@ -187,7 +191,8 @@ export default function CalendarPage() {
                     .map((schedule, idx) => (
                       <div
                         key={idx}
-                        className="bg-blue-100 p-1 rounded flex justify-between items-center cursor-pointer hover:bg-blue-200 active:bg-blue-300"
+                        className="p-1 rounded flex justify-between items-center cursor-pointer hover:opacity-80 active:opacity-60"
+                        style={{ backgroundColor: schedule.backgroundColor }}
                         onClick={() =>
                           handleEditClassClick({
                             ...schedule,
@@ -195,7 +200,7 @@ export default function CalendarPage() {
                           })
                         }
                       >
-                        <span>
+                        <span className="text-sm font-medium text-gray-700">
                           {schedule.name} <br />
                           {schedule.startTime}-{schedule.endTime}
                         </span>

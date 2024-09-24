@@ -5,6 +5,21 @@ import { useState, useEffect } from "react";
 import { doc, deleteDoc, updateDoc } from "firebase/firestore";
 import { scheduleCalendarFirestore } from "@/firebase";
 
+const colorOptions = [
+  "#1890ff",
+  "#52c41a",
+  "#faad14",
+  "#f5222d",
+  "#722ed1",
+  "#13c2c2",
+  "#eb2f96",
+  "#fa8c16",
+  "#a0d911",
+  "#2f54eb",
+  "#fadb14",
+  "#eb4d4b",
+];
+
 interface EditClassModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -14,6 +29,7 @@ interface EditClassModalProps {
     startTime: string;
     endTime: string;
     day: string;
+    backgroundColor: string;
   } | null;
   teacherId: string;
 }
@@ -28,6 +44,7 @@ const EditClassModal: React.FC<EditClassModalProps> = ({
   const [startTime, setStartTime] = useState<string | null>(null);
   const [endTime, setEndTime] = useState<string | null>(null);
   const [day, setDay] = useState<string | null>(null);
+  const [backgroundColor, setBackgroundColor] = useState(colorOptions[0]);
   const [action, setAction] = useState<"edit" | "delete">("edit");
 
   useEffect(() => {
@@ -36,6 +53,7 @@ const EditClassModal: React.FC<EditClassModalProps> = ({
       setStartTime(selectedSchedule.startTime);
       setEndTime(selectedSchedule.endTime);
       setDay(selectedSchedule.day);
+      setBackgroundColor(selectedSchedule.backgroundColor);
     }
   }, [selectedSchedule]);
 
@@ -96,6 +114,7 @@ const EditClassModal: React.FC<EditClassModalProps> = ({
             startTime,
             endTime,
             day,
+            backgroundColor,
           });
 
           message.success("수업이 수정되었습니다.");
@@ -111,47 +130,69 @@ const EditClassModal: React.FC<EditClassModalProps> = ({
   return (
     <Modal title="수업 수정" open={isOpen} onCancel={onClose} onOk={handleSave}>
       <div className="py-4 space-y-4">
-        <>
-          <div>
-            <label htmlFor="edit-student-name">이름</label>
-            <Input
-              id="edit-student-name"
-              className="mt-2"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+        <Radio.Group
+          onChange={(e) => setAction(e.target.value)}
+          value={action}
+          className="mb-4"
+        >
+          <Radio value="edit">수정</Radio>
+          <Radio value="delete">삭제</Radio>
+        </Radio.Group>
+        {action === "edit" && (
+          <>
+            <div>
+              <label htmlFor="edit-student-name">이름</label>
+              <Input
+                id="edit-student-name"
+                className="mt-2"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+            </div>
+            <div>
+              <label htmlFor="edit-class-day">요일</label>
+              <Select
+                id="edit-class-day"
+                className="mt-2 w-full"
+                value={day}
+                onChange={(value) => setDay(value)}
+              >
+                <Select.Option value="일">일</Select.Option>
+                <Select.Option value="월">월</Select.Option>
+                <Select.Option value="화">화</Select.Option>
+                <Select.Option value="수">수</Select.Option>
+                <Select.Option value="목">목</Select.Option>
+                <Select.Option value="금">금</Select.Option>
+                <Select.Option value="토">토</Select.Option>
+              </Select>
+            </div>
+            <TimePicker
+              startTime={startTime}
+              endTime={endTime}
+              onTimeSelect={handleTimeSelection}
             />
-          </div>
-          <div>
-            <label htmlFor="edit-class-day">요일</label>
-            <Select
-              id="edit-class-day"
-              className="mt-2 w-full"
-              value={day}
-              onChange={(value) => setDay(value)}
-            >
-              <Select.Option value="일">일</Select.Option>
-              <Select.Option value="월">월</Select.Option>
-              <Select.Option value="화">화</Select.Option>
-              <Select.Option value="수">수</Select.Option>
-              <Select.Option value="목">목</Select.Option>
-              <Select.Option value="금">금</Select.Option>
-              <Select.Option value="토">토</Select.Option>
-            </Select>
-          </div>
-          <TimePicker
-            startTime={startTime}
-            endTime={endTime}
-            onTimeSelect={handleTimeSelection}
-          />
-          <Radio.Group
-            onChange={(e) => setAction(e.target.value)}
-            value={action}
-            className="mb-4"
-          >
-            <Radio value="edit">수정</Radio>
-            <Radio value="delete">삭제</Radio>
-          </Radio.Group>
-        </>
+            <div>
+              <span className="text-sm md:text-base lg:text-lg">
+                스케줄 색상
+              </span>
+              <div className="grid grid-cols-6 gap-2 mt-2">
+                {colorOptions.map((color) => (
+                  <button
+                    key={color}
+                    className={`w-8 h-8 rounded-full border-2 ${
+                      backgroundColor === color
+                        ? "border-black"
+                        : "border-transparent"
+                    }`}
+                    style={{ backgroundColor: color }}
+                    onClick={() => setBackgroundColor(color)}
+                    aria-label={`Select color ${color}`}
+                  />
+                ))}
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </Modal>
   );
