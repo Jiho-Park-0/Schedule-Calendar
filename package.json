@@ -2,11 +2,14 @@
   "name": "my-app",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://jiho-park-0.github.io/Schedule-Calendar/",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist"
   },
   "dependencies": {
     "@ant-design/nextjs-registry": "^1.0.1",
@@ -14,6 +17,7 @@
     "antd": "^5.20.6",
     "axios": "^1.7.7",
     "firebase": "^10.13.2",
+    "gh-pages": "^6.1.1",
     "moment": "^2.30.1",
     "next": "14.2.12",
     "react": "^18",
