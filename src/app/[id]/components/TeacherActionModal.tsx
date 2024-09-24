@@ -1,7 +1,13 @@
 import { useState, useEffect } from "react";
 import { Modal, Input, message } from "antd";
 import { useRouter } from "next/navigation";
-import { doc, deleteDoc, getDoc } from "firebase/firestore";
+import {
+  doc,
+  deleteDoc,
+  getDoc,
+  collection,
+  getDocs,
+} from "firebase/firestore";
 import { scheduleCalendarFirestore } from "@/firebase";
 
 interface TeacherActionModalProps {
@@ -53,10 +59,22 @@ const TeacherActionModal: React.FC<TeacherActionModalProps> = ({
   }, [isOpen]);
 
   const handleOk = async () => {
-    console.log(profile);
     if (profile && profile.password === password) {
       try {
+        // Delete all documents in the student subcollection
+        const studentCollectionRef = collection(
+          scheduleCalendarFirestore,
+          `profiles/${teacherId}/student`
+        );
+        const studentDocs = await getDocs(studentCollectionRef);
+        const deletePromises = studentDocs.docs.map((doc) =>
+          deleteDoc(doc.ref)
+        );
+        await Promise.all(deletePromises);
+
+        // Delete the teacher profile document
         await deleteDoc(doc(scheduleCalendarFirestore, "profiles", teacherId));
+
         message.success("반 삭제 성공");
         onClose();
         router.push("/"); // 메인 페이지로 리다이렉션

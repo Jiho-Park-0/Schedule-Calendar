@@ -6,7 +6,6 @@ import TeacherActionModal from "@/app/[id]/components/TeacherActionModal";
 
 interface DeleteClassButtonProps {
   teacherId: string;
-  currentWeekString: string;
 }
 
 export default function DeleteClassButton({

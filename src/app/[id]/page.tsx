@@ -132,8 +132,6 @@ export default function CalendarPage() {
     setIsEditClassModalOpen(true);
   };
 
-  const currentWeekString = "2024-07-08";
-
   return (
     <div className="min-h-screen bg-gray-100 p-4 md:p-8">
       <div className="max-w-6xl mx-auto">
@@ -152,10 +150,7 @@ export default function CalendarPage() {
               teacherId={id}
               currentWeekString={currentWeekString}
             /> */}
-            <DeleteClassButton
-              teacherId={id}
-              currentWeekString={currentWeekString}
-            />
+            <DeleteClassButton teacherId={id} />
           </Space>
         </header>
 
