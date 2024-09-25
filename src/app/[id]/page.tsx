@@ -141,6 +141,7 @@ export default function CalendarPage() {
         <Header
           profileName={profile?.name || ""}
           onTeacherActionClick={() => setIsTeacherActionModalOpen(true)}
+          teacherId={id}
         />
         <WeeklySchedule
           weekDays={weekDays}

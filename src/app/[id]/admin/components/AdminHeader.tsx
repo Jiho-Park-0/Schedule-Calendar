@@ -4,7 +4,7 @@ import DeleteClassButton from "@/app/[id]/admin/components/DeleteClassButton";
 import DeleteScheduleButton from "@/app/[id]/admin/components/DeleteScheduleButton";
 import EditTimeLimitModal from "@/app/[id]/admin/components/EditTimeLimitModal";
 import ViewAndEditLimitsModal from "@/app/[id]/admin/components/ViewAndEditLimitsModal";
-
+import { useRouter } from "next/navigation";
 interface AdminHeaderProps {
   profileName: string;
   teacherId: string;
@@ -14,6 +14,7 @@ const AdminHeader: React.FC<AdminHeaderProps> = ({
   profileName,
   teacherId,
 }) => {
+  const router = useRouter();
   const [isEditTimeLimitModalVisible, setIsEditTimeLimitModalVisible] =
     useState(false);
   const [isViewAndEditLimitsModalVisible, setIsViewAndEditLimitsModalVisible] =
@@ -34,6 +35,8 @@ const AdminHeader: React.FC<AdminHeaderProps> = ({
           인원 제한 수정
         </Button>
         <DeleteScheduleButton teacherId={teacherId} />
+        {/* 돌아가기 버튼 */}
+        <Button onClick={() => router.push(`/${teacherId}`)}>돌아가기</Button>
         <DeleteClassButton teacherId={teacherId} />
       </Space>
       <EditTimeLimitModal
