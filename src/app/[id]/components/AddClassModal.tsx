@@ -12,6 +12,7 @@ import {
 } from "firebase/firestore";
 import { scheduleCalendarFirestore } from "@/firebase";
 import { v4 as uuidv4 } from "uuid";
+import { checkScheduleLimit } from "@/app/[id]/utils/checkScheduleLimit"; // Import the new utility function
 
 const colorOptions = [
   "#1890ff",
@@ -48,20 +49,6 @@ const AddClassModal: React.FC<AddClassModalProps> = ({
   const [backgroundColor, setBackgroundColor] = useState(colorOptions[0]);
   const [password, setPassword] = useState<string>("");
 
-  useEffect(() => {
-    if (!isOpen) {
-      setName("");
-      setStartTime(null);
-      setEndTime(null);
-      setDay(null);
-      setBackgroundColor(colorOptions[0]);
-      setPassword("");
-    }
-    if (isOpen && selectedDay) {
-      setDay(selectedDay);
-    }
-  }, [isOpen, selectedDay]);
-
   const handleTimeSelection = (time: string) => {
     if (!startTime || (startTime && endTime)) {
       setStartTime(time);
@@ -76,6 +63,17 @@ const AddClassModal: React.FC<AddClassModalProps> = ({
 
   const handleSave = async () => {
     if (name && startTime && endTime && day && password) {
+      const isWithinLimit = await checkScheduleLimit(
+        teacherId,
+        startTime,
+        endTime,
+        day
+      );
+      if (!isWithinLimit) {
+        message.error("해당 시간대에 인원이 초과되었습니다.");
+        return;
+      }
+
       const collectionPath = `profiles/${teacherId}/student`;
       const uniqueId = uuidv4();
       const docRef = doc(scheduleCalendarFirestore, collectionPath, uniqueId);
@@ -115,6 +113,20 @@ const AddClassModal: React.FC<AddClassModalProps> = ({
       message.error("모든 정보를 입력해 주세요.");
     }
   };
+
+  useEffect(() => {
+    if (!isOpen) {
+      setName("");
+      setStartTime(null);
+      setEndTime(null);
+      setDay(null);
+      setBackgroundColor(colorOptions[0]);
+      setPassword("");
+    }
+    if (isOpen && selectedDay) {
+      setDay(selectedDay);
+    }
+  }, [isOpen, selectedDay]);
 
   return (
     <Modal title="수업 추가" open={isOpen} onCancel={onClose} onOk={handleSave}>

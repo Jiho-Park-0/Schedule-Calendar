@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Modal, Button, Form, InputNumber, message } from "antd";
+import { Modal, Button, Form, InputNumber, message, Select } from "antd";
 import {
   doc,
   setDoc,
@@ -26,8 +26,11 @@ const ViewAndEditLimitsModal: React.FC<ViewAndEditLimitsModalProps> = ({
       startTime: string;
       endTime: string;
       limitNum: number;
+      day: string;
     }[]
   >([]);
+
+  const weekDays = ["일", "월", "화", "수", "목", "금", "토"];
 
   useEffect(() => {
     if (visible) {
@@ -44,6 +47,7 @@ const ViewAndEditLimitsModal: React.FC<ViewAndEditLimitsModalProps> = ({
           startTime: string;
           endTime: string;
           limitNum: number;
+          day: string;
         }[] = [];
         querySnapshot.forEach((doc) => {
           limitsData.push({
@@ -51,6 +55,7 @@ const ViewAndEditLimitsModal: React.FC<ViewAndEditLimitsModalProps> = ({
             startTime: doc.data().startTime,
             endTime: doc.data().endTime,
             limitNum: doc.data().limitNum,
+            day: doc.data().day,
           });
         });
         setLimits(limitsData);
@@ -76,6 +81,7 @@ const ViewAndEditLimitsModal: React.FC<ViewAndEditLimitsModalProps> = ({
           startTime: limit.startTime,
           endTime: limit.endTime,
           limitNum: newLimitNum,
+          day: limit.day,
         });
       }
       message.success("인원 제한이 성공적으로 저장되었습니다."); // Show message once after all updates
@@ -104,6 +110,22 @@ const ViewAndEditLimitsModal: React.FC<ViewAndEditLimitsModalProps> = ({
     }
   };
 
+  const handleLimitChange = (id: string, newLimitNum: number) => {
+    setLimits((prevLimits) =>
+      prevLimits.map((limit) =>
+        limit.id === id ? { ...limit, limitNum: newLimitNum } : limit
+      )
+    );
+  };
+
+  const handleDayChange = (id: string, newDay: string) => {
+    setLimits((prevLimits) =>
+      prevLimits.map((limit) =>
+        limit.id === id ? { ...limit, day: newDay } : limit
+      )
+    );
+  };
+
   return (
     <Modal
       title="인원 제한 수정"
@@ -118,28 +140,33 @@ const ViewAndEditLimitsModal: React.FC<ViewAndEditLimitsModalProps> = ({
         </Button>,
       ]}
     >
-      <Form layout="vertical">
+      <Form layout="vertical" className="flex flex-col gap-4">
         {limits.map((limit) => (
           <Form.Item
             key={limit.id}
             label={`시간: ${limit.startTime} - ${limit.endTime}`}
+            className="flex flex-col gap-4"
           >
-            <InputNumber
-              style={{ marginLeft: 10, width: 80 }}
-              min={0}
-              defaultValue={limit.limitNum}
-              onChange={(value) => {
-                limit.limitNum = value || 0; // Update limit number in limits array
-              }}
-            />
-            <Button
-              type="link"
-              danger
-              onClick={() => handleDelete(limit.id)}
-              style={{ marginLeft: 10 }}
-            >
-              삭제
-            </Button>
+            <div className="flex items-center gap-4">
+              <InputNumber
+                style={{ width: 80 }}
+                min={0}
+                value={limit.limitNum} // Use value instead of defaultValue
+                onChange={(value) => handleLimitChange(limit.id, value || 0)} // Update limit number
+              />
+              <Select
+                value={limit.day}
+                onChange={(value) => handleDayChange(limit.id, value)} // Update day
+                options={weekDays.map((day, index) => ({
+                  key: index,
+                  value: day,
+                  label: day,
+                }))}
+              />
+              <Button type="link" danger onClick={() => handleDelete(limit.id)}>
+                삭제
+              </Button>
+            </div>
           </Form.Item>
         ))}
       </Form>

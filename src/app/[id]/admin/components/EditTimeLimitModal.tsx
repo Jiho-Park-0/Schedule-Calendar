@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Modal, InputNumber, Form, Button, message } from "antd";
+import { Modal, InputNumber, Form, Button, message, Select } from "antd";
 import { doc, setDoc, collection, getDocs } from "firebase/firestore";
 import { scheduleCalendarFirestore } from "@/firebase";
 import TimePicker from "@/app/[id]/components/TimePicker";
@@ -18,6 +18,8 @@ const EditTimeLimitModal: React.FC<EditTimeLimitModalProps> = ({
   const [startTime, setStartTime] = useState<string | null>(null);
   const [endTime, setEndTime] = useState<string | null>(null);
   const [limitNum, setLimitNum] = useState<number | null>(0); // Default to 0
+  const [day, setDay] = useState<string>("월");
+  const weekDays = ["일", "월", "화", "수", "목", "금", "토"];
 
   useEffect(() => {
     if (visible) {
@@ -53,7 +55,7 @@ const EditTimeLimitModal: React.FC<EditTimeLimitModalProps> = ({
         "limit",
         timeRange
       );
-      await setDoc(docRef, { startTime, endTime, limitNum });
+      await setDoc(docRef, { startTime, endTime, limitNum, day });
       message.success("인원 제한이 성공적으로 저장되었습니다.");
       onClose();
     } catch (error) {
@@ -106,6 +108,15 @@ const EditTimeLimitModal: React.FC<EditTimeLimitModalProps> = ({
           />
         </Form.Item>
       </Form>
+      <Select
+        value={day}
+        onChange={(value) => setDay(value)}
+        options={weekDays.map((day, index) => ({
+          key: index,
+          value: day,
+          label: day,
+        }))}
+      />
     </Modal>
   );
 };

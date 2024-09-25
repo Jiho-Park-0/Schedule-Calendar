@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 
 import { doc, deleteDoc, updateDoc, getDoc } from "firebase/firestore";
 import { scheduleCalendarFirestore } from "@/firebase";
+import { checkScheduleLimit } from "@/app/[id]/utils/checkScheduleLimit"; // Import the new utility function
 
 const colorOptions = [
   "#1890ff",
@@ -98,8 +99,6 @@ const EditClassModal: React.FC<EditClassModalProps> = ({
   };
 
   const isPasswordValid = () => {
-    console.log(password, selectedSchedule?.password);
-    console.log(adminPassword, adminPasswordFromDB);
     return (
       password === selectedSchedule?.password ||
       adminPassword === adminPasswordFromDB
@@ -142,6 +141,17 @@ const EditClassModal: React.FC<EditClassModalProps> = ({
       handleDelete();
     } else {
       if (selectedSchedule) {
+        const isWithinLimit = await checkScheduleLimit(
+          teacherId,
+          day ?? "",
+          startTime ?? "",
+          endTime ?? ""
+        );
+        if (!isWithinLimit) {
+          message.error("해당 시간대에 인원이 초과되었습니다.");
+          return;
+        }
+
         try {
           const docRef = doc(
             scheduleCalendarFirestore,
