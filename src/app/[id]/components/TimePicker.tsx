@@ -9,7 +9,7 @@ interface TimePickerProps {
 
 const generateTimeSlots = () => {
   const slots = [];
-  for (let hour = 9; hour <= 23; hour++) {
+  for (let hour = 10; hour <= 23; hour++) {
     for (let minute = 0; minute < 60; minute += 30) {
       slots.push(
         `${hour.toString().padStart(2, "0")}:${minute

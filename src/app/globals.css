@@ -13,6 +13,7 @@
     --foreground: #ededed;
   }
 }
+
 @font-face {
   font-family: "GmarketSansTTF";
   src: url("../app/fonts/GmarketSansTTFLight.ttf") format("truetype");
@@ -33,6 +34,7 @@
   font-weight: 700;
   font-style: normal;
 }
+
 body {
   font-family: "GmarketSansTTF", sans-serif;
   color: var(--foreground);
@@ -42,5 +44,11 @@ body {
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+}
+
+@media (max-width: 1440px) {
+  .min-w-[1440px] {
+    min-width: 1440px;
   }
 }

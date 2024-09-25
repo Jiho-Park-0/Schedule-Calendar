@@ -17,11 +17,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko">
-      <body className="flex flex-col items-center bg-gray-100 min-h-screen min-w-min">
+      <body className="flex flex-col items-center bg-gray-100 min-h-screen justify-center">
         <div className="w-full max-w-screen-xl">
           <Header />
         </div>
-
         <AntdRegistry>
           <div className="p-4 w-full max-w-screen-xl">{children}</div>
         </AntdRegistry>

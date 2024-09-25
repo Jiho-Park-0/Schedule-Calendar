@@ -1,7 +1,15 @@
 import { Modal, Input, Select, message } from "antd";
 import TimePicker from "./TimePicker";
 import { useState, useEffect } from "react";
-import { doc, setDoc } from "firebase/firestore";
+import {
+  doc,
+  setDoc,
+  deleteDoc,
+  getDocs,
+  query,
+  collection,
+  where,
+} from "firebase/firestore";
 import { scheduleCalendarFirestore } from "@/firebase";
 import { v4 as uuidv4 } from "uuid";
 
@@ -38,6 +46,7 @@ const AddClassModal: React.FC<AddClassModalProps> = ({
   const [endTime, setEndTime] = useState<string | null>(null);
   const [day, setDay] = useState<string | null>(null);
   const [backgroundColor, setBackgroundColor] = useState(colorOptions[0]);
+  const [password, setPassword] = useState<string>("");
 
   useEffect(() => {
     if (!isOpen) {
@@ -46,6 +55,7 @@ const AddClassModal: React.FC<AddClassModalProps> = ({
       setEndTime(null);
       setDay(null);
       setBackgroundColor(colorOptions[0]);
+      setPassword("");
     }
     if (isOpen && selectedDay) {
       setDay(selectedDay);
@@ -70,14 +80,36 @@ const AddClassModal: React.FC<AddClassModalProps> = ({
       const uniqueId = uuidv4();
       const docRef = doc(scheduleCalendarFirestore, collectionPath, uniqueId);
 
+      // Check for the "initial" document and delete it if it exists
+      const initialQuery = query(
+        collection(scheduleCalendarFirestore, collectionPath),
+        where("name", "==", "initial")
+      );
+
+      const initialSnapshot = await getDocs(initialQuery);
+
+      const initialdocRef = doc(
+        scheduleCalendarFirestore,
+        collectionPath,
+        "initial"
+      );
+      if (!initialdocRef) {
+        initialSnapshot.forEach(async (doc) => {
+          await deleteDoc(doc.ref);
+        });
+      }
+      await deleteDoc(initialdocRef);
+
       await setDoc(docRef, {
         name,
         startTime,
         endTime,
         day,
         backgroundColor,
+        password,
       });
 
+      message.success("수업이 추가되었습니다.");
       onClose();
     } else {
       message.error("모든 정보를 입력해 주세요.");
@@ -94,6 +126,7 @@ const AddClassModal: React.FC<AddClassModalProps> = ({
             className="mt-2"
             value={name}
             onChange={(e) => setName(e.target.value)}
+            placeholder="이름을 입력해주세요."
           />
         </div>
         <div>
@@ -136,6 +169,23 @@ const AddClassModal: React.FC<AddClassModalProps> = ({
               />
             ))}
           </div>
+        </div>
+        <div>
+          <label htmlFor="student-password">비밀번호</label>
+          <Input
+            id="student-password"
+            type="password"
+            placeholder="비밀번호를 입력해주세요."
+            className="mt-2"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          {password &&
+            !/^(?=.*[a-zA-Z])(?=.*\d)[A-Za-z\d]{8,}$/.test(password) && (
+              <span className="text-red-500">
+                비밀번호는 영문과 숫자를 포함하여 최소 8자 이상이어야 합니다.
+              </span>
+            )}
         </div>
       </div>
     </Modal>

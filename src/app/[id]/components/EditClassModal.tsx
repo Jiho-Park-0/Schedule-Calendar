@@ -30,6 +30,7 @@ interface EditClassModalProps {
     endTime: string;
     day: string;
     backgroundColor: string;
+    password: string;
   } | null;
   teacherId: string;
 }
@@ -45,6 +46,7 @@ const EditClassModal: React.FC<EditClassModalProps> = ({
   const [endTime, setEndTime] = useState<string | null>(null);
   const [day, setDay] = useState<string | null>(null);
   const [backgroundColor, setBackgroundColor] = useState(colorOptions[0]);
+  const [password, setPassword] = useState<string>("");
   const [action, setAction] = useState<"edit" | "delete">("edit");
 
   useEffect(() => {
@@ -54,6 +56,7 @@ const EditClassModal: React.FC<EditClassModalProps> = ({
       setEndTime(selectedSchedule.endTime);
       setDay(selectedSchedule.day);
       setBackgroundColor(selectedSchedule.backgroundColor);
+      setPassword("");
     }
   }, [selectedSchedule]);
 
@@ -76,6 +79,10 @@ const EditClassModal: React.FC<EditClassModalProps> = ({
   };
 
   const handleDelete = async () => {
+    if (password !== selectedSchedule?.password) {
+      message.error("비밀번호가 일치하지 않습니다.");
+      return;
+    }
     if (selectedSchedule) {
       try {
         const docRef = doc(
@@ -98,6 +105,11 @@ const EditClassModal: React.FC<EditClassModalProps> = ({
   };
 
   const handleSave = async () => {
+    if (password !== selectedSchedule?.password) {
+      message.error("비밀번호가 일치하지 않습니다.");
+      return;
+    }
+
     if (action === "delete") {
       handleDelete();
     } else {
@@ -115,6 +127,7 @@ const EditClassModal: React.FC<EditClassModalProps> = ({
             endTime,
             day,
             backgroundColor,
+            password,
           });
 
           message.success("수업이 수정되었습니다.");
@@ -178,6 +191,23 @@ const EditClassModal: React.FC<EditClassModalProps> = ({
               />
             ))}
           </div>
+        </div>
+        <div>
+          <label htmlFor="student-password">비밀번호</label>
+          <Input
+            id="student-password"
+            type="password" // {{ edit_1 }} 비밀번호 입력 시 *로 표시되도록 변경
+            placeholder="비밀번호를 입력해주세요."
+            className="mt-2"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          {password &&
+            !/^(?=.*[a-zA-Z])(?=.*\d)[A-Za-z\d]{8,}$/.test(password) && ( // {{ edit_2 }} 비밀번호 유효성 검사
+              <span className="text-red-500">
+                비밀번호는 영문과 숫자를 포함하여 최소 8자 이상이어야 합니다.
+              </span>
+            )}
         </div>
         <Radio.Group
           onChange={(e) => setAction(e.target.value)}

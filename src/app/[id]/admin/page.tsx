@@ -1,16 +1,30 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
+import { message } from "antd";
 import AddClassModal from "@/app/[id]/components/AddClassModal";
 import EditClassModal from "@/app/[id]/components/EditClassModal";
-import TeacherActionModal from "@/app/[id]/components/TeacherActionModal";
-import Header from "@/app/[id]/components/Header";
-import WeeklySchedule from "@/app/[id]/components/WeeklySchedule";
+import TeacherActionModal from "@/app/[id]/admin/components/TeacherActionModal";
+import AdminHeader from "@/app/[id]/admin/components/AdminHeader";
+import AdminWeeklySchedule from "@/app/[id]/admin/components/AdminWeeklySchedule";
+
 import { doc, getDoc, collection, query, onSnapshot } from "firebase/firestore";
 import { scheduleCalendarFirestore } from "@/firebase";
 
-export default function CalendarPage() {
+export default function AdminPage() {
+  const router = useRouter();
+  const { id } = useParams() as { id: string };
+
+  useEffect(() => {
+    const isAuthenticated = localStorage.getItem("isAuthenticated");
+
+    if (isAuthenticated !== "true") {
+      message.error("접근 권한이 없습니다.");
+      router.push(`/${id}`); // Redirect to the main page
+    }
+  }, [id, router]);
+
   const [isAddClassModalOpen, setIsAddClassModalOpen] = useState(false);
   const [isEditClassModalOpen, setIsEditClassModalOpen] = useState(false);
   const [isTeacherActionModalOpen, setIsTeacherActionModalOpen] =
@@ -45,7 +59,6 @@ export default function CalendarPage() {
     return `${hour.toString().padStart(2, "0")}:${minute}`;
   });
 
-  const { id } = useParams() as { id: string };
   const [profile, setProfile] = useState<{
     id: string;
     name: string;
@@ -138,11 +151,8 @@ export default function CalendarPage() {
   return (
     <div className="min-h-screen bg-gray-100 p-4 md:p-8 flex flex-col items-center justify-center">
       <div className="max-w-6xl w-full ">
-        <Header
-          profileName={profile?.name || ""}
-          onTeacherActionClick={() => setIsTeacherActionModalOpen(true)}
-        />
-        <WeeklySchedule
+        <AdminHeader profileName={profile?.name || ""} teacherId={id} />
+        <AdminWeeklySchedule
           weekDays={weekDays}
           timeSlots={timeSlots}
           scheduleData={scheduleData}
