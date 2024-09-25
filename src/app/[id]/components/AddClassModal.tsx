@@ -75,7 +75,7 @@ const AddClassModal: React.FC<AddClassModalProps> = ({
   };
 
   const handleSave = async () => {
-    if (name && startTime && endTime && day) {
+    if (name && startTime && endTime && day && password) {
       const collectionPath = `profiles/${teacherId}/student`;
       const uniqueId = uuidv4();
       const docRef = doc(scheduleCalendarFirestore, collectionPath, uniqueId);

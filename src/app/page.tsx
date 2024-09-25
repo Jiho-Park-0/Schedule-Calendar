@@ -89,19 +89,6 @@ export default function MainPage() {
         backgroundColor,
       };
 
-      // Fetch existing profiles from profile.json
-      const response = await fetch("/profile.json");
-      const profiles = await response.json();
-
-      // Check if the new ID already exists
-      const idExists = profiles.some(
-        (profile: { id: number }) => profile.id === newId
-      );
-      if (idExists) {
-        message.error("ID already exists");
-        return;
-      }
-
       // Use setDoc to specify the document ID as the id
       await setDoc(
         doc(scheduleCalendarFirestore, "profiles", newBox.id),
@@ -121,10 +108,6 @@ export default function MainPage() {
         ),
         {}
       );
-
-      // Simulate updating profile.json
-
-      // Assuming you have a function to handle the server-side update
 
       setBoxes([...boxes, newBox]);
       setName("");

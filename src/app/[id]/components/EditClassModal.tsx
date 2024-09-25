@@ -2,7 +2,7 @@ import { Modal, Input, Select, message, Radio } from "antd";
 import TimePicker from "./TimePicker";
 import { useState, useEffect } from "react";
 
-import { doc, deleteDoc, updateDoc } from "firebase/firestore";
+import { doc, deleteDoc, updateDoc, getDoc } from "firebase/firestore";
 import { scheduleCalendarFirestore } from "@/firebase";
 
 const colorOptions = [
@@ -47,7 +47,11 @@ const EditClassModal: React.FC<EditClassModalProps> = ({
   const [day, setDay] = useState<string | null>(null);
   const [backgroundColor, setBackgroundColor] = useState(colorOptions[0]);
   const [password, setPassword] = useState<string>("");
+  const [adminPassword, setAdminPassword] = useState<string>("");
   const [action, setAction] = useState<"edit" | "delete">("edit");
+  const [adminPasswordFromDB, setAdminPasswordFromDB] = useState<string>("");
+
+  // console.log(selectedSchedule);
 
   useEffect(() => {
     if (selectedSchedule) {
@@ -57,14 +61,29 @@ const EditClassModal: React.FC<EditClassModalProps> = ({
       setDay(selectedSchedule.day);
       setBackgroundColor(selectedSchedule.backgroundColor);
       setPassword("");
+      setAdminPassword("");
     }
   }, [selectedSchedule]);
 
   useEffect(() => {
+    const fetchAdminPassword = async () => {
+      try {
+        const docRef = doc(scheduleCalendarFirestore, `profiles/${teacherId}`);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          setAdminPasswordFromDB(docSnap.data().password);
+        } else {
+          console.error("No such document!");
+        }
+      } catch (error) {
+        console.error("Error fetching admin password:", error);
+      }
+    };
     if (isOpen) {
       setAction("edit");
+      fetchAdminPassword();
     }
-  }, [isOpen]);
+  }, [isOpen, teacherId]);
 
   const handleTimeSelection = (time: string) => {
     if (!startTime || (startTime && endTime)) {
@@ -78,8 +97,17 @@ const EditClassModal: React.FC<EditClassModalProps> = ({
     }
   };
 
+  const isPasswordValid = () => {
+    console.log(password, selectedSchedule?.password);
+    console.log(adminPassword, adminPasswordFromDB);
+    return (
+      password === selectedSchedule?.password ||
+      adminPassword === adminPasswordFromDB
+    );
+  };
+
   const handleDelete = async () => {
-    if (password !== selectedSchedule?.password) {
+    if (!isPasswordValid()) {
       message.error("비밀번호가 일치하지 않습니다.");
       return;
     }
@@ -88,7 +116,7 @@ const EditClassModal: React.FC<EditClassModalProps> = ({
         const docRef = doc(
           scheduleCalendarFirestore,
           `profiles/${teacherId}/student`,
-          selectedSchedule.id // Use the unique ID
+          selectedSchedule.id
         );
 
         await deleteDoc(docRef);
@@ -105,7 +133,7 @@ const EditClassModal: React.FC<EditClassModalProps> = ({
   };
 
   const handleSave = async () => {
-    if (password !== selectedSchedule?.password) {
+    if (!isPasswordValid()) {
       message.error("비밀번호가 일치하지 않습니다.");
       return;
     }
@@ -118,7 +146,7 @@ const EditClassModal: React.FC<EditClassModalProps> = ({
           const docRef = doc(
             scheduleCalendarFirestore,
             `profiles/${teacherId}/student`,
-            selectedSchedule.id // Use the unique ID
+            selectedSchedule.id
           );
 
           await updateDoc(docRef, {
@@ -196,18 +224,29 @@ const EditClassModal: React.FC<EditClassModalProps> = ({
           <label htmlFor="student-password">비밀번호</label>
           <Input
             id="student-password"
-            type="password" // {{ edit_1 }} 비밀번호 입력 시 *로 표시되도록 변경
+            type="password"
             placeholder="비밀번호를 입력해주세요."
             className="mt-2"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
           {password &&
-            !/^(?=.*[a-zA-Z])(?=.*\d)[A-Za-z\d]{8,}$/.test(password) && ( // {{ edit_2 }} 비밀번호 유효성 검사
+            !/^(?=.*[a-zA-Z])(?=.*\d)[A-Za-z\d]{8,}$/.test(password) && (
               <span className="text-red-500">
                 비밀번호는 영문과 숫자를 포함하여 최소 8자 이상이어야 합니다.
               </span>
             )}
+        </div>
+        <div>
+          <label htmlFor="admin-password">관리자 비밀번호</label>
+          <Input
+            id="admin-password"
+            type="password"
+            placeholder="관리자 비밀번호를 입력해주세요."
+            className="mt-2"
+            value={adminPassword}
+            onChange={(e) => setAdminPassword(e.target.value)}
+          />
         </div>
         <Radio.Group
           onChange={(e) => setAction(e.target.value)}
