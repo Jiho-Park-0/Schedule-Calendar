@@ -81,7 +81,6 @@ const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
               <div
                 key={index}
                 className="max-w-full border-l flex-1 items-center justify-center min-w-[190px]"
-                // style={{ minWidth: `${100 / weekDays.length}%` }}
               >
                 <div className="text-center mb-2 flex flex-col justify-center items-center">
                   <div className="font-semibold text-sm md:text-base min-w-[100px]">
