@@ -89,19 +89,6 @@ export default function MainPage() {
         backgroundColor,
       };
 
-      // Fetch existing profiles from profile.json
-      const response = await fetch("/profile.json");
-      const profiles = await response.json();
-
-      // Check if the new ID already exists
-      const idExists = profiles.some(
-        (profile: { id: number }) => profile.id === newId
-      );
-      if (idExists) {
-        message.error("ID already exists");
-        return;
-      }
-
       // Use setDoc to specify the document ID as the id
       await setDoc(
         doc(scheduleCalendarFirestore, "profiles", newBox.id),
@@ -121,10 +108,6 @@ export default function MainPage() {
         ),
         {}
       );
-
-      // Simulate updating profile.json
-
-      // Assuming you have a function to handle the server-side update
 
       setBoxes([...boxes, newBox]);
       setName("");
@@ -192,12 +175,21 @@ export default function MainPage() {
           onChange={(e) => setName(e.target.value)}
           style={{ marginBottom: 16 }}
         />
-        <Input.Password
-          placeholder="비밀번호"
+        <label htmlFor="student-password">비밀번호</label>
+        <Input
+          id="student-password"
+          type="password" // {{ edit_1 }} 비밀번호 입력 시 *로 표시되도록 변경
+          placeholder="비밀번호를 입력해주세요."
+          className="mt-2"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          style={{ marginBottom: 16 }}
         />
+        {password &&
+          !/^(?=.*[a-zA-Z])(?=.*\d)[A-Za-z\d]{8,}$/.test(password) && ( // {{ edit_2 }} 비밀번호 유효성 검사
+            <span className="text-red-500">
+              비밀번호는 영문과 숫자를 포함하여 최소 8자 이상이어야 합니다.
+            </span>
+          )}
         <div>
           <span className="text-sm md:text-base lg:text-lg">반 색상</span>
           <div className="grid grid-cols-6 gap-2 mt-2">

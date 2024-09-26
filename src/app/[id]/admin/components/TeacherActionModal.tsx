@@ -1,7 +1,13 @@
 import { useState, useEffect } from "react";
 import { Modal, Input, message } from "antd";
 import { useRouter } from "next/navigation";
-import { doc, getDoc } from "firebase/firestore";
+import {
+  doc,
+  deleteDoc,
+  getDoc,
+  collection,
+  getDocs,
+} from "firebase/firestore";
 import { scheduleCalendarFirestore } from "@/firebase";
 
 interface TeacherActionModalProps {
@@ -54,9 +60,28 @@ const TeacherActionModal: React.FC<TeacherActionModalProps> = ({
 
   const handleOk = async () => {
     if (profile && profile.password === password) {
-      message.success("인증 성공");
-      onClose();
-      router.push(`/${teacherId}/admin`); // Redirect to admin page
+      try {
+        // Delete all documents in the student subcollection
+        const studentCollectionRef = collection(
+          scheduleCalendarFirestore,
+          `profiles/${teacherId}/student`
+        );
+        const studentDocs = await getDocs(studentCollectionRef);
+        const deletePromises = studentDocs.docs.map((doc) =>
+          deleteDoc(doc.ref)
+        );
+        await Promise.all(deletePromises);
+
+        // Delete the teacher profile document
+        await deleteDoc(doc(scheduleCalendarFirestore, "profiles", teacherId));
+
+        message.success("반 삭제 성공");
+        onClose();
+        router.push("/"); // 메인 페이지로 리다이렉션
+      } catch (error) {
+        console.error("Error deleting class:", error);
+        message.error("반 삭제 실패");
+      }
     } else {
       message.error("비밀번호가 일치하지 않습니다.");
     }
@@ -64,7 +89,7 @@ const TeacherActionModal: React.FC<TeacherActionModalProps> = ({
 
   return (
     <Modal title="선생님 인증" open={isOpen} onCancel={onClose} onOk={handleOk}>
-      <div>관리자 페이지로 이동하려면 비밀번호를 입력하세요.</div>
+      <div>현재 반과 등록된 선생님의 정보를 삭제합니다.</div>
       <div className="py-4">
         <label htmlFor="teacher-action-password">비밀번호를 입력하세요</label>
         <Input

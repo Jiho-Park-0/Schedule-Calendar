@@ -1,16 +1,16 @@
 "use client";
 
-import { Button } from "antd";
 import { useState } from "react";
-import TeacherActionModal from "./TeacherActionModal";
+import { Button } from "antd";
+import TeacherActionModal from "@/app/[id]/admin/components/TeacherActionModal";
 
-interface DeleteScheduleButtonProps {
+interface DeleteClassButtonProps {
   teacherId: string;
 }
 
-export default function DeleteScheduleButton({
+export default function DeleteClassButton({
   teacherId,
-}: DeleteScheduleButtonProps) {
+}: DeleteClassButtonProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleOpenModal = () => {
@@ -23,7 +23,9 @@ export default function DeleteScheduleButton({
 
   return (
     <>
-      <Button onClick={handleOpenModal}>시간표 삭제</Button>
+      <Button danger onClick={handleOpenModal}>
+        반 삭제
+      </Button>
       <TeacherActionModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}

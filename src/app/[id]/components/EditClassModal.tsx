@@ -2,8 +2,9 @@ import { Modal, Input, Select, message, Radio } from "antd";
 import TimePicker from "./TimePicker";
 import { useState, useEffect } from "react";
 
-import { doc, deleteDoc, updateDoc } from "firebase/firestore";
+import { doc, deleteDoc, updateDoc, getDoc } from "firebase/firestore";
 import { scheduleCalendarFirestore } from "@/firebase";
+import { checkScheduleLimit } from "@/app/[id]/utils/checkScheduleLimit"; // Import the new utility function
 
 const colorOptions = [
   "#1890ff",
@@ -30,6 +31,7 @@ interface EditClassModalProps {
     endTime: string;
     day: string;
     backgroundColor: string;
+    password: string;
   } | null;
   teacherId: string;
 }
@@ -45,7 +47,12 @@ const EditClassModal: React.FC<EditClassModalProps> = ({
   const [endTime, setEndTime] = useState<string | null>(null);
   const [day, setDay] = useState<string | null>(null);
   const [backgroundColor, setBackgroundColor] = useState(colorOptions[0]);
+  const [password, setPassword] = useState<string>("");
+  const [adminPassword, setAdminPassword] = useState<string>("");
   const [action, setAction] = useState<"edit" | "delete">("edit");
+  const [adminPasswordFromDB, setAdminPasswordFromDB] = useState<string>("");
+
+  // console.log(selectedSchedule);
 
   useEffect(() => {
     if (selectedSchedule) {
@@ -54,14 +61,30 @@ const EditClassModal: React.FC<EditClassModalProps> = ({
       setEndTime(selectedSchedule.endTime);
       setDay(selectedSchedule.day);
       setBackgroundColor(selectedSchedule.backgroundColor);
+      setPassword("");
+      setAdminPassword("");
     }
   }, [selectedSchedule]);
 
   useEffect(() => {
+    const fetchAdminPassword = async () => {
+      try {
+        const docRef = doc(scheduleCalendarFirestore, `profiles/${teacherId}`);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          setAdminPasswordFromDB(docSnap.data().password);
+        } else {
+          console.error("No such document!");
+        }
+      } catch (error) {
+        console.error("Error fetching admin password:", error);
+      }
+    };
     if (isOpen) {
       setAction("edit");
+      fetchAdminPassword();
     }
-  }, [isOpen]);
+  }, [isOpen, teacherId]);
 
   const handleTimeSelection = (time: string) => {
     if (!startTime || (startTime && endTime)) {
@@ -75,13 +98,24 @@ const EditClassModal: React.FC<EditClassModalProps> = ({
     }
   };
 
+  const isPasswordValid = () => {
+    return (
+      password === selectedSchedule?.password ||
+      adminPassword === adminPasswordFromDB
+    );
+  };
+
   const handleDelete = async () => {
+    if (!isPasswordValid()) {
+      message.error("비밀번호가 일치하지 않습니다.");
+      return;
+    }
     if (selectedSchedule) {
       try {
         const docRef = doc(
           scheduleCalendarFirestore,
           `profiles/${teacherId}/student`,
-          selectedSchedule.id // Use the unique ID
+          selectedSchedule.id
         );
 
         await deleteDoc(docRef);
@@ -98,15 +132,33 @@ const EditClassModal: React.FC<EditClassModalProps> = ({
   };
 
   const handleSave = async () => {
+    if (!isPasswordValid()) {
+      message.error("비밀번호가 일치하지 않습니다.");
+      return;
+    }
+
     if (action === "delete") {
       handleDelete();
     } else {
       if (selectedSchedule) {
+        if (name && startTime && endTime && day && password) {
+          const isWithinLimit = await checkScheduleLimit(
+            teacherId,
+            startTime,
+            endTime,
+            day
+          );
+
+          if (!isWithinLimit) {
+            message.error("해당 시간대에 인원이 초과되었습니다.");
+            return;
+          }
+        }
         try {
           const docRef = doc(
             scheduleCalendarFirestore,
             `profiles/${teacherId}/student`,
-            selectedSchedule.id // Use the unique ID
+            selectedSchedule.id
           );
 
           await updateDoc(docRef, {
@@ -115,6 +167,7 @@ const EditClassModal: React.FC<EditClassModalProps> = ({
             endTime,
             day,
             backgroundColor,
+            password,
           });
 
           message.success("수업이 수정되었습니다.");
@@ -178,6 +231,34 @@ const EditClassModal: React.FC<EditClassModalProps> = ({
               />
             ))}
           </div>
+        </div>
+        <div>
+          <label htmlFor="student-password">비밀번호</label>
+          <Input
+            id="student-password"
+            type="password"
+            placeholder="비밀번호를 입력해주세요."
+            className="mt-2"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          {password &&
+            !/^(?=.*[a-zA-Z])(?=.*\d)[A-Za-z\d]{8,}$/.test(password) && (
+              <span className="text-red-500">
+                비밀번호는 영문과 숫자를 포함하여 최소 8자 이상이어야 합니다.
+              </span>
+            )}
+        </div>
+        <div>
+          <label htmlFor="admin-password">관리자 비밀번호</label>
+          <Input
+            id="admin-password"
+            type="password"
+            placeholder="관리자 비밀번호를 입력해주세요."
+            className="mt-2"
+            value={adminPassword}
+            onChange={(e) => setAdminPassword(e.target.value)}
+          />
         </div>
         <Radio.Group
           onChange={(e) => setAction(e.target.value)}
