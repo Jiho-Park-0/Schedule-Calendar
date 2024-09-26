@@ -9,6 +9,11 @@ interface ScheduleLimitModalProps {
   onClose: () => void;
 }
 
+const changeStringToTime = (time: string) => {
+  const [hour, minute] = time.split(":");
+  return Number(hour) * 60 + Number(minute);
+};
+
 const ScheduleLimitModal: React.FC<ScheduleLimitModalProps> = ({
   teacherId,
   visible,
@@ -38,59 +43,79 @@ const ScheduleLimitModal: React.FC<ScheduleLimitModalProps> = ({
       const studentSnapshot = await getDocs(studentQuery);
 
       const limitData = limitSnapshot.docs.map((limitDoc) => {
-        const { startTime, endTime, limitNum, day } = limitDoc.data();
+        const {
+          startTime: limitStart,
+          endTime: limitEnd,
+          limitNum,
+          day: limitDay,
+        } = limitDoc.data();
         let count = 0;
-        const studentTimes: { startTime: Date; endTime: Date }[] = [];
 
-        studentSnapshot.docs.forEach((studentDoc) => {
+        const limitStartChange = changeStringToTime(limitStart);
+        const limitEndChange = changeStringToTime(limitEnd);
+        for (const studentDoc of studentSnapshot.docs) {
           const {
             startTime: studentStart,
             endTime: studentEnd,
             day: studentDay,
           } = studentDoc.data();
-          if (day === studentDay) {
-            const studentStartTime = new Date(`1970-01-01T${studentStart}:00`);
-            const studentEndTime = new Date(`1970-01-01T${studentEnd}:00`);
-            studentTimes.push({
-              startTime: studentStartTime,
-              endTime: studentEndTime,
-            });
-          }
-        });
+          if (limitDay === studentDay) {
+            if (studentDay !== limitDay) continue;
 
-        // 겹치는 시간대 병합
-        studentTimes.sort(
-          (a, b) => a.startTime.getTime() - b.startTime.getTime()
-        );
-        const mergedTimes: { startTime: Date; endTime: Date }[] = [];
-        studentTimes.forEach((time) => {
-          if (mergedTimes.length === 0) {
-            mergedTimes.push(time);
-          } else {
-            const lastMergedTime = mergedTimes[mergedTimes.length - 1];
-            if (time.startTime <= lastMergedTime.endTime) {
-              lastMergedTime.endTime = new Date(
-                Math.max(
-                  lastMergedTime.endTime.getTime(),
-                  time.endTime.getTime()
-                )
-              );
-            } else {
-              mergedTimes.push(time);
+            const studentStartChange = changeStringToTime(studentStart);
+            const studentEndChange = changeStringToTime(studentEnd);
+
+            if (
+              (limitStartChange < studentStartChange &&
+                studentStartChange < limitEndChange) ||
+              (limitStartChange < studentEndChange &&
+                studentEndChange < limitEndChange)
+            ) {
+              console.log(studentStart, studentEnd);
+              count++;
             }
           }
-        });
+        }
+        console.log(count);
+        // 겹치는 시간대 병합
+        // studentTimes.sort(
+        //   (a, b) => a.startTime.getTime() - b.startTime.getTime()
+        // );
+        // const mergedTimes: { startTime: Date; endTime: Date }[] = [];
+        // studentTimes.forEach((time) => {
+        //   if (mergedTimes.length === 0) {
+        //     mergedTimes.push(time);
+        //   } else {
+        //     const lastMergedTime = mergedTimes[mergedTimes.length - 1];
+        //     if (time.startTime <= lastMergedTime.endTime) {
+        //       lastMergedTime.endTime = new Date(
+        //         Math.max(
+        //           lastMergedTime.endTime.getTime(),
+        //           time.endTime.getTime()
+        //         )
+        //       );
+        //     } else {
+        //       mergedTimes.push(time);
+        //     }
+        //   }
+        // });
 
         // 제한 시간대와 겹치는 학생들의 수 카운트
-        const limitStartTime = new Date(`1970-01-01T${startTime}:00`);
-        const limitEndTime = new Date(`1970-01-01T${endTime}:00`);
-        mergedTimes.forEach((time) => {
-          if (time.startTime < limitEndTime && time.endTime > limitStartTime) {
-            count++;
-          }
-        });
+        // const limitStartTime = new Date(`1970-01-01T${limitStart}:00`);
+        // const limitEndTime = new Date(`1970-01-01T${limitEnd}:00`);
+        // mergedTimes.forEach((time) => {
+        //   if (time.startTime < limitEndTime && time.endTime > limitStartTime) {
+        //     count++;
+        //   }
+        // });
 
-        return { day, startTime, endTime, limitNum, count };
+        return {
+          day: limitDay,
+          startTime: limitStart,
+          endTime: limitEnd,
+          limitNum,
+          count,
+        };
       });
 
       setLimits(limitData);

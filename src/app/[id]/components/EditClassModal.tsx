@@ -141,17 +141,19 @@ const EditClassModal: React.FC<EditClassModalProps> = ({
       handleDelete();
     } else {
       if (selectedSchedule) {
-        const isWithinLimit = await checkScheduleLimit(
-          teacherId,
-          day ?? "",
-          startTime ?? "",
-          endTime ?? ""
-        );
-        if (!isWithinLimit) {
-          message.error("해당 시간대에 인원이 초과되었습니다.");
-          return;
-        }
+        if (name && startTime && endTime && day && password) {
+          const isWithinLimit = await checkScheduleLimit(
+            teacherId,
+            startTime,
+            endTime,
+            day
+          );
 
+          if (!isWithinLimit) {
+            message.error("해당 시간대에 인원이 초과되었습니다.");
+            return;
+          }
+        }
         try {
           const docRef = doc(
             scheduleCalendarFirestore,

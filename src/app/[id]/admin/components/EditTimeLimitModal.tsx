@@ -90,6 +90,15 @@ const EditTimeLimitModal: React.FC<EditTimeLimitModalProps> = ({
         </Button>,
       ]}
     >
+      <Select
+        value={day}
+        onChange={(value) => setDay(value)}
+        options={weekDays.map((day, index) => ({
+          key: index,
+          value: day,
+          label: day,
+        }))}
+      />
       <Form layout="vertical">
         <Form.Item label="시간 선택">
           <TimePicker
@@ -108,15 +117,6 @@ const EditTimeLimitModal: React.FC<EditTimeLimitModalProps> = ({
           />
         </Form.Item>
       </Form>
-      <Select
-        value={day}
-        onChange={(value) => setDay(value)}
-        options={weekDays.map((day, index) => ({
-          key: index,
-          value: day,
-          label: day,
-        }))}
-      />
     </Modal>
   );
 };

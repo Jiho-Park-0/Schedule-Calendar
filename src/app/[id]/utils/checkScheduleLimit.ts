@@ -1,6 +1,11 @@
 import { getDocs, query, collection } from "firebase/firestore";
 import { scheduleCalendarFirestore } from "@/firebase";
 
+const changeStringToTime = (time: string) => {
+  const [hour, minute] = time.split(":");
+  return Number(hour) * 60 + Number(minute);
+};
+
 export const checkScheduleLimit = async (
   teacherId: string,
   startTime: string,
@@ -26,44 +31,53 @@ export const checkScheduleLimit = async (
 
     if (day !== limitDay) continue;
 
-    const limitStartTime = new Date(`1970-01-01T${limitStart}:00`);
-    const limitEndTime = new Date(`1970-01-01T${limitEnd}:00`);
-    const newStartTime = new Date(`1970-01-01T${startTime}:00`);
-    const newEndTime = new Date(`1970-01-01T${endTime}:00`);
-
-    if (newStartTime < limitEndTime && newEndTime > limitStartTime) {
+    if (startTime < limitEnd && endTime > limitStart) {
       let count = 0;
-
+      const limitStartChange = changeStringToTime(limitStart);
+      const limitEndChange = changeStringToTime(limitEnd);
       for (const studentDoc of studentSnapshot.docs) {
-        const { startTime: studentStart, endTime: studentEnd } =
-          studentDoc.data();
-        const studentStartTime = new Date(`1970-01-01T${studentStart}:00`);
-        const studentEndTime = new Date(`1970-01-01T${studentEnd}:00`);
+        const {
+          startTime: studentStart,
+          endTime: studentEnd,
+          day: studentDay,
+        } = studentDoc.data();
 
-        // 겹치는 시간 계산
-        const overlapStart = new Date(
-          Math.max(studentStartTime.getTime(), limitStartTime.getTime())
-        );
-        const overlapEnd = new Date(
-          Math.min(studentEndTime.getTime(), limitEndTime.getTime())
-        );
+        if (studentDay !== limitDay) continue;
+
+        const studentStartChange = changeStringToTime(studentStart);
+        const studentEndChange = changeStringToTime(studentEnd);
 
         // 겹치는 시간이 있으면 카운트 증가
-        if (overlapStart < overlapEnd) {
+        if (
+          (limitStartChange < studentStartChange &&
+            studentStartChange < limitEndChange) ||
+          (limitStartChange < studentEndChange &&
+            studentEndChange < limitEndChange)
+        ) {
           count++;
         }
       }
 
       // 신청할 수 없는 시간대가 있는지 확인
-      const overlapStart = new Date(
-        Math.max(newStartTime.getTime(), limitStartTime.getTime())
-      );
-      const overlapEnd = new Date(
-        Math.min(newEndTime.getTime(), limitEndTime.getTime())
-      );
+      console.log(count);
+      const overlapStart = changeStringToTime(startTime);
+      const overlapEnd = changeStringToTime(endTime);
+      console.log(limitStartChange, limitEndChange);
 
-      // 인원 초과 시 신청 불가
-      if (overlapStart < overlapEnd && count >= limitNum) {
+      console.log(overlapStart, overlapEnd);
+
+      if (
+        (limitStartChange < overlapStart && overlapStart < limitEndChange) ||
+        (limitStartChange < overlapEnd && overlapEnd < limitEndChange) ||
+        (overlapStart < limitStartChange && limitStartChange < overlapEnd) ||
+        (overlapStart < limitEndChange && limitEndChange < overlapEnd)
+      ) {
+        console.log("신청할 수 없는 시간대가 있습니다.");
+        return false;
+      }
+
+      if (count >= limitNum) {
+        // 인원 초과 시 신청 불가
         return false;
       }
     }
