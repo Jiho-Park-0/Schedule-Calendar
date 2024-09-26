@@ -5,7 +5,7 @@ export default function IdLayout({
 }>) {
   return (
     <div className="flex flex-col items-center justify-center bg-gray-100 min-h-screen">
-      <div className="w-full max-w-screen-xl ">{children}</div>
+      <div className="w-full">{children}</div>
     </div>
   );
 }

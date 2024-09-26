@@ -137,7 +137,7 @@ export default function CalendarPage() {
 
   return (
     <div className="min-h-screen bg-gray-100 p-4 md:p-8 flex flex-col items-center justify-center">
-      <div className="max-w-6xl w-full ">
+      <div className="w-full ">
         <Header
           profileName={profile?.name || ""}
           onTeacherActionClick={() => setIsTeacherActionModalOpen(true)}
