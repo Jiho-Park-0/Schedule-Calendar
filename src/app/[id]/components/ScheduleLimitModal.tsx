@@ -60,54 +60,28 @@ const ScheduleLimitModal: React.FC<ScheduleLimitModalProps> = ({
             day: studentDay,
           } = studentDoc.data();
           if (limitDay === studentDay) {
+            console.log("student", studentStart, studentEnd);
             if (studentDay !== limitDay) continue;
 
             const studentStartChange = changeStringToTime(studentStart);
             const studentEndChange = changeStringToTime(studentEnd);
 
             if (
-              (limitStartChange < studentStartChange &&
+              (limitStartChange <= studentStartChange &&
                 studentStartChange < limitEndChange) ||
               (limitStartChange < studentEndChange &&
-                studentEndChange < limitEndChange)
+                studentEndChange <= limitEndChange)
             ) {
-              console.log(studentStart, studentEnd);
+              console.log(
+                "겹치는 시간대가 있습니다.",
+                studentStart,
+                studentEnd
+              );
               count++;
             }
           }
         }
         console.log(count);
-        // 겹치는 시간대 병합
-        // studentTimes.sort(
-        //   (a, b) => a.startTime.getTime() - b.startTime.getTime()
-        // );
-        // const mergedTimes: { startTime: Date; endTime: Date }[] = [];
-        // studentTimes.forEach((time) => {
-        //   if (mergedTimes.length === 0) {
-        //     mergedTimes.push(time);
-        //   } else {
-        //     const lastMergedTime = mergedTimes[mergedTimes.length - 1];
-        //     if (time.startTime <= lastMergedTime.endTime) {
-        //       lastMergedTime.endTime = new Date(
-        //         Math.max(
-        //           lastMergedTime.endTime.getTime(),
-        //           time.endTime.getTime()
-        //         )
-        //       );
-        //     } else {
-        //       mergedTimes.push(time);
-        //     }
-        //   }
-        // });
-
-        // 제한 시간대와 겹치는 학생들의 수 카운트
-        // const limitStartTime = new Date(`1970-01-01T${limitStart}:00`);
-        // const limitEndTime = new Date(`1970-01-01T${limitEnd}:00`);
-        // mergedTimes.forEach((time) => {
-        //   if (time.startTime < limitEndTime && time.endTime > limitStartTime) {
-        //     count++;
-        //   }
-        // });
 
         return {
           day: limitDay,

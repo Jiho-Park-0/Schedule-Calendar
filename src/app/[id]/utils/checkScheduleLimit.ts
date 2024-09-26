@@ -49,35 +49,27 @@ export const checkScheduleLimit = async (
 
         // 겹치는 시간이 있으면 카운트 증가
         if (
-          (limitStartChange < studentStartChange &&
+          (limitStartChange <= studentStartChange &&
             studentStartChange < limitEndChange) ||
           (limitStartChange < studentEndChange &&
-            studentEndChange < limitEndChange)
+            studentEndChange <= limitEndChange)
         ) {
           count++;
         }
       }
 
       // 신청할 수 없는 시간대가 있는지 확인
-      console.log(count);
+      console.log(count, limitNum);
       const overlapStart = changeStringToTime(startTime);
       const overlapEnd = changeStringToTime(endTime);
-      console.log(limitStartChange, limitEndChange);
 
-      console.log(overlapStart, overlapEnd);
+      console.log("limit", limitStartChange, limitEndChange);
+      console.log("overlap", overlapStart, overlapEnd);
+      console.log("count", count);
 
-      if (
-        (limitStartChange < overlapStart && overlapStart < limitEndChange) ||
-        (limitStartChange < overlapEnd && overlapEnd < limitEndChange) ||
-        (overlapStart < limitStartChange && limitStartChange < overlapEnd) ||
-        (overlapStart < limitEndChange && limitEndChange < overlapEnd)
-      ) {
-        console.log("신청할 수 없는 시간대가 있습니다.");
-        return false;
-      }
-
-      if (count >= limitNum) {
-        // 인원 초과 시 신청 불가
+      if (count < limitNum) {
+        return true;
+      } else {
         return false;
       }
     }
