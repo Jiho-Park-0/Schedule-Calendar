@@ -55,6 +55,7 @@ const TeacherActionModal: React.FC<TeacherActionModalProps> = ({
   const handleOk = async () => {
     if (profile && profile.password === password) {
       message.success("인증 성공");
+      localStorage.setItem("isAuthenticated", "true");
       onClose();
       router.push(`/${teacherId}/admin`); // Redirect to admin page
     } else {

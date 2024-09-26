@@ -40,6 +40,23 @@ const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
     return (((end - start) / 30) * 100) / 27;
   };
 
+  const calculateLeftPosition = (
+    schedules: Schedule[],
+    currentSchedule: Schedule
+  ) => {
+    let leftPosition = 0;
+    for (let i = 0; i < schedules.length; i++) {
+      const schedule = schedules[i];
+      if (
+        currentSchedule.startTime < schedule.endTime &&
+        currentSchedule.endTime > schedule.startTime
+      ) {
+        leftPosition += 20; // 겹치는 경우 left 값을 증가시킴
+      }
+    }
+    return leftPosition;
+  };
+
   return (
     <div className="bg-white shadow rounded-lg p-4 md:p-6 items-center justify-center min-w-max w-full">
       <div className="flex justify-center items-center mb-4">
@@ -63,7 +80,7 @@ const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
             return (
               <div
                 key={index}
-                className="max-w-full border-l flex-1 items-center justify-center min-w-[180px]"
+                className="max-w-full border-l flex-1 items-center justify-center min-w-[190px]"
                 // style={{ minWidth: `${100 / weekDays.length}%` }}
               >
                 <div className="text-center mb-2 flex flex-col justify-center items-center">
@@ -79,7 +96,7 @@ const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
                   </Button>
                 </div>
 
-                <div className="relative h-[2700px] w-[160px]">
+                <div className="relative h-[2700px] w-[160px] flex flex-col m-2">
                   {schedulesInDay.map((schedule, idx) => (
                     <div
                       key={idx}
@@ -92,12 +109,11 @@ const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
                         )}%`,
                         backgroundColor: schedule.backgroundColor,
                         width: `16px`,
-                        left: `calc(${(idx * 100) / schedulesInDay.length}% + ${
-                          idx * 4
-                        }px)`,
+                        left: `${calculateLeftPosition(
+                          schedulesInDay.slice(0, idx),
+                          schedule
+                        )}px`,
                       }}
-                      // left 크기 출력
-
                       onClick={() => onEditClassClick(schedule)}
                     >
                       <span className="text-xs font-medium text-white">

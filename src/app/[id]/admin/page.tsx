@@ -150,7 +150,7 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen bg-gray-100 p-4 md:p-8 flex flex-col items-center justify-center">
-      <div className="max-w-6xl w-full ">
+      <div className="w-full ">
         <AdminHeader profileName={profile?.name || ""} teacherId={id} />
         <AdminWeeklySchedule
           weekDays={weekDays}
