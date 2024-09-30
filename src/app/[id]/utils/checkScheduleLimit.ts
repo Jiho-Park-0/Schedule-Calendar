@@ -29,6 +29,13 @@ export const checkScheduleLimit = async (
       day: limitDay,
     } = limitDoc.data();
 
+    // console.log(
+    //   changeStringToTime(limitStart),
+    //   changeStringToTime(limitEnd),
+    //   limitNum,
+    //   limitDay
+    // );
+
     if (day !== limitDay) continue;
 
     if (startTime < limitEnd && endTime > limitStart) {
@@ -41,7 +48,11 @@ export const checkScheduleLimit = async (
           endTime: studentEnd,
           day: studentDay,
         } = studentDoc.data();
-
+        // console.log(
+        //   changeStringToTime(studentStart),
+        //   changeStringToTime(studentEnd),
+        //   studentDay
+        // );
         if (studentDay !== limitDay) continue;
 
         const studentStartChange = changeStringToTime(studentStart);
@@ -49,24 +60,13 @@ export const checkScheduleLimit = async (
 
         // 겹치는 시간이 있으면 카운트 증가
         if (
-          (limitStartChange <= studentStartChange &&
-            studentStartChange < limitEndChange) ||
-          (limitStartChange < studentEndChange &&
-            studentEndChange <= limitEndChange)
+          studentStartChange <= limitEndChange &&
+          studentEndChange >= limitStartChange
         ) {
           count++;
         }
       }
-
-      // 신청할 수 없는 시간대가 있는지 확인
       console.log(count, limitNum);
-      const overlapStart = changeStringToTime(startTime);
-      const overlapEnd = changeStringToTime(endTime);
-
-      console.log("limit", limitStartChange, limitEndChange);
-      console.log("overlap", overlapStart, overlapEnd);
-      console.log("count", count);
-
       if (count < limitNum) {
         return true;
       } else {

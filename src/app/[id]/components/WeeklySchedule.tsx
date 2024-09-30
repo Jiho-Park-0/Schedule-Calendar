@@ -45,13 +45,15 @@ const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
     currentSchedule: Schedule
   ) => {
     let leftPosition = 0;
-    const scheduleWidth = 16; // Width of each schedule block in pixels
+    const scheduleWidth = 17; // Width of each schedule block in pixels
 
     for (let i = 0; i < schedules.length; i++) {
       const schedule = schedules[i];
       if (
-        currentSchedule.startTime < schedule.endTime &&
-        currentSchedule.endTime >= schedule.startTime
+        (currentSchedule.startTime < schedule.endTime &&
+          currentSchedule.endTime >= schedule.startTime) ||
+        (currentSchedule.startTime == schedule.startTime &&
+          currentSchedule.endTime == schedule.endTime)
       ) {
         leftPosition += scheduleWidth; // Increase left position by the width of a schedule block
       }
@@ -61,7 +63,7 @@ const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
   };
 
   return (
-    <div className="bg-white shadow rounded-lg p-4 md:p-6 items-center justify-center min-w-max w-full">
+    <div className="bg-white shadow rounded-lg p-4  items-center justify-center min-w-max w-full">
       <div className="flex justify-center items-center mb-4">
         <Title level={2} className="text-lg md:text-xl lg:text-2xl text-center">
           주간 시간표
@@ -83,10 +85,10 @@ const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
             return (
               <div
                 key={index}
-                className="border-l flex-1 items-center justify-center max-w-full min-w-[190px]"
+                className="border-l flex-1 items-center justify-center "
               >
                 <div className="text-center mb-2 flex flex-col justify-center items-center">
-                  <div className="font-semibold text-sm md:text-base min-w-[100px]">
+                  <div className="font-semibold text-sm md:text-base ">
                     {day}
                   </div>
                   <Button
@@ -98,7 +100,7 @@ const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
                   </Button>
                 </div>
 
-                <div className="relative h-[2700px] w-[160px] flex flex-col m-2">
+                <div className="relative h-[2700px] w-[120px] flex flex-col m-2">
                   {schedulesInDay.map((schedule, idx) => (
                     <div
                       key={idx}

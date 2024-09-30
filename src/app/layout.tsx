@@ -22,7 +22,7 @@ export default function RootLayout({
           <Header />
         </div>
         <AntdRegistry>
-          <div className="p-4 w-full max-w-screen-2xl">{children}</div>
+          <div className=" w-full max-w-screen-2xl">{children}</div>
         </AntdRegistry>
         <Footer />
       </body>

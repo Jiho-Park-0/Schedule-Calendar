@@ -67,21 +67,13 @@ const ScheduleLimitModal: React.FC<ScheduleLimitModalProps> = ({
             const studentEndChange = changeStringToTime(studentEnd);
 
             if (
-              (limitStartChange <= studentStartChange &&
-                studentStartChange < limitEndChange) ||
-              (limitStartChange < studentEndChange &&
-                studentEndChange <= limitEndChange)
+              studentStartChange <= limitEndChange &&
+              studentEndChange >= limitStartChange
             ) {
-              console.log(
-                "겹치는 시간대가 있습니다.",
-                studentStart,
-                studentEnd
-              );
               count++;
             }
           }
         }
-        console.log(count);
 
         return {
           day: limitDay,
