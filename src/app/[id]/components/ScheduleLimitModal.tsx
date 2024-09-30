@@ -67,7 +67,7 @@ const ScheduleLimitModal: React.FC<ScheduleLimitModalProps> = ({
 
             if (
               studentStartChange < limitEndChange &&
-              studentEndChange >= limitStartChange
+              studentEndChange > limitStartChange
             ) {
               count++;
             }

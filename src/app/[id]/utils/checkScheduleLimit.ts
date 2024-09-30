@@ -61,7 +61,7 @@ export const checkScheduleLimit = async (
         // 겹치는 시간이 있으면 카운트 증가
         if (
           studentStartChange < limitEndChange &&
-          studentEndChange >= limitStartChange
+          studentEndChange > limitStartChange
         ) {
           count++;
         }
