@@ -60,14 +60,13 @@ const ScheduleLimitModal: React.FC<ScheduleLimitModalProps> = ({
             day: studentDay,
           } = studentDoc.data();
           if (limitDay === studentDay) {
-            console.log("student", studentStart, studentEnd);
             if (studentDay !== limitDay) continue;
 
             const studentStartChange = changeStringToTime(studentStart);
             const studentEndChange = changeStringToTime(studentEnd);
 
             if (
-              studentStartChange <= limitEndChange &&
+              studentStartChange < limitEndChange &&
               studentEndChange >= limitStartChange
             ) {
               count++;

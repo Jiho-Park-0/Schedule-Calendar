@@ -37,33 +37,46 @@ const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
     const [endHour, endMinute] = endTime.split(":").map(Number);
     const start = startHour * 60 + startMinute;
     const end = endHour * 60 + endMinute;
-    return (((end - start) / 30) * 100) / 27;
+    return (((end - start) / 30) * 100) / 27 - 0.05;
   };
 
   const calculateLeftPosition = (
     schedules: Schedule[],
     currentSchedule: Schedule
   ) => {
-    let leftPosition = 0;
-    const scheduleWidth = 17; // Width of each schedule block in pixels
+    const scheduleWidth = 17; // 각 스케줄 블록의 너비 (픽셀)
+    const maxLeft = 153; // 최대 left 값
+    const leftPositions = Array(Math.floor(maxLeft / scheduleWidth)).fill(
+      false
+    ); // left 포지션 배열
 
+    // 기존 스케줄들과 겹치는지 확인
     for (let i = 0; i < schedules.length; i++) {
       const schedule = schedules[i];
       if (
-        (currentSchedule.startTime < schedule.endTime &&
-          currentSchedule.endTime >= schedule.startTime) ||
-        (currentSchedule.startTime == schedule.startTime &&
-          currentSchedule.endTime == schedule.endTime)
+        currentSchedule.startTime < schedule.endTime &&
+        currentSchedule.endTime > schedule.startTime
       ) {
-        leftPosition += scheduleWidth; // Increase left position by the width of a schedule block
+        // 겹치면 해당 left 위치를 차지했다고 표시
+        const index = Math.floor(
+          calculateLeftPosition(schedules.slice(0, i), schedule) / scheduleWidth
+        );
+        leftPositions[index] = true;
       }
     }
 
-    return leftPosition;
+    // 사용 가능한 가장 작은 left 위치 찾기
+    for (let i = 0; i < leftPositions.length; i++) {
+      if (!leftPositions[i]) {
+        return i * scheduleWidth; // 해당 left 위치 반환
+      }
+    }
+
+    return maxLeft; // 만약 모든 위치가 차 있다면, maxLeft 반환
   };
 
   return (
-    <div className="bg-white shadow rounded-lg p-4  items-center justify-center min-w-max w-full">
+    <div className="bg-white shadow rounded-lg p-4 items-center justify-center min-w-max w-full">
       <div className="flex justify-center items-center mb-4">
         <Title level={2} className="text-lg md:text-xl lg:text-2xl text-center">
           주간 시간표
@@ -100,7 +113,7 @@ const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
                   </Button>
                 </div>
 
-                <div className="relative h-[2700px] w-[120px] flex flex-col m-2">
+                <div className="relative h-[2700px] w-[130px] flex flex-col m-2 ">
                   {schedulesInDay.map((schedule, idx) => (
                     <div
                       key={idx}
