@@ -27,7 +27,7 @@ const AdminHeader: React.FC<AdminHeaderProps> = ({
           {decodeURI(profileName)} 선생님의 시간표
         </h1>
       </div>
-      <Space className="mt-4 md:mt-0">
+      <Space className="mt-4 md:mt-0 flex-wrap">
         <Button onClick={() => setIsEditTimeLimitModalVisible(true)}>
           시간별 인원 제한 설정
         </Button>
