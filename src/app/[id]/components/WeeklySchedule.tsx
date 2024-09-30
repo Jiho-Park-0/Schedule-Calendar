@@ -45,15 +45,18 @@ const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
     currentSchedule: Schedule
   ) => {
     let leftPosition = 0;
+    const scheduleWidth = 16; // Width of each schedule block in pixels
+
     for (let i = 0; i < schedules.length; i++) {
       const schedule = schedules[i];
       if (
         currentSchedule.startTime < schedule.endTime &&
-        currentSchedule.endTime > schedule.startTime
+        currentSchedule.endTime >= schedule.startTime
       ) {
-        leftPosition += 20; // 겹치는 경우 left 값을 증가시킴
+        leftPosition += scheduleWidth; // Increase left position by the width of a schedule block
       }
     }
+
     return leftPosition;
   };
 
@@ -80,7 +83,7 @@ const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
             return (
               <div
                 key={index}
-                className="max-w-full border-l flex-1 items-center justify-center min-w-[190px]"
+                className="border-l flex-1 items-center justify-center max-w-full min-w-[190px]"
               >
                 <div className="text-center mb-2 flex flex-col justify-center items-center">
                   <div className="font-semibold text-sm md:text-base min-w-[100px]">
