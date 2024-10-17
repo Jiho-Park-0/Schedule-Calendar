@@ -1,5 +1,5 @@
 import { Modal, Input, Select, message, Radio } from "antd";
-import TimePicker from "./TimePicker";
+import TimePicker from "@/app/[id]/components/TimePicker";
 import { useState, useEffect } from "react";
 
 import { doc, deleteDoc, updateDoc, getDoc } from "firebase/firestore";
@@ -141,7 +141,7 @@ const EditClassModal: React.FC<EditClassModalProps> = ({
       handleDelete();
     } else {
       if (selectedSchedule) {
-        if (name && startTime && endTime && day && password) {
+        if (name && startTime && endTime && day) {
           const isWithinLimit = await checkScheduleLimit(
             teacherId,
             startTime,
@@ -153,28 +153,34 @@ const EditClassModal: React.FC<EditClassModalProps> = ({
             message.error("해당 시간대에 인원이 초과되었습니다.");
             return;
           }
-        }
-        try {
-          const docRef = doc(
-            scheduleCalendarFirestore,
-            `profiles/${teacherId}/student`,
-            selectedSchedule.id
-          );
 
-          await updateDoc(docRef, {
-            name,
-            startTime,
-            endTime,
-            day,
-            backgroundColor,
-            password,
-          });
+          // 비밀번호가 비어있다면 기존 비밀번호를 유지하고, 아니면 새로운 비밀번호로 업데이트
+          // const updatedPassword = selectedSchedule.password;
 
-          message.success("수업이 수정되었습니다.");
-          onClose();
-        } catch (error) {
-          message.error("수업 수정에 실패했습니다.");
-          console.error("Failed to update class:", error);
+          try {
+            const docRef = doc(
+              scheduleCalendarFirestore,
+              `profiles/${teacherId}/student`,
+              selectedSchedule.id
+            );
+
+            await updateDoc(docRef, {
+              name,
+              startTime,
+              endTime,
+              day,
+              backgroundColor,
+              password: selectedSchedule.password, // 비밀번호 업데이트
+            });
+
+            message.success("수업이 수정되었습니다.");
+            onClose();
+          } catch (error) {
+            message.error("수업 수정에 실패했습니다.");
+            console.error("Failed to update class:", error);
+          }
+        } else {
+          message.error("모든 필드를 입력해주세요.");
         }
       }
     }
@@ -232,7 +238,7 @@ const EditClassModal: React.FC<EditClassModalProps> = ({
             ))}
           </div>
         </div>
-        <div>
+        {/* <div>
           <label htmlFor="student-password">비밀번호</label>
           <Input
             id="student-password"
@@ -248,8 +254,8 @@ const EditClassModal: React.FC<EditClassModalProps> = ({
                 비밀번호는 영문과 숫자를 포함하여 최소 8자 이상이어야 합니다.
               </span>
             )}
-        </div>
-        {/* <div>
+        </div> */}
+        <div>
           <label htmlFor="admin-password">관리자 비밀번호</label>
           <Input
             id="admin-password"
@@ -259,7 +265,7 @@ const EditClassModal: React.FC<EditClassModalProps> = ({
             value={adminPassword}
             onChange={(e) => setAdminPassword(e.target.value)}
           />
-        </div> */}
+        </div>
         <Radio.Group
           onChange={(e) => setAction(e.target.value)}
           value={action}

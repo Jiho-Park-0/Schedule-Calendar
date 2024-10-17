@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { message } from "antd";
 import AddClassModal from "@/app/[id]/components/AddClassModal";
-import EditClassModal from "@/app/[id]/components/EditClassModal";
+import EditAdminClassModal from "@/app/[id]/admin/components/EditAdminClassModal";
 import TeacherActionModal from "@/app/[id]/admin/components/TeacherActionModal";
 import AdminHeader from "@/app/[id]/admin/components/AdminHeader";
 import AdminWeeklySchedule from "@/app/[id]/admin/components/AdminWeeklySchedule";
@@ -167,7 +167,13 @@ export default function AdminPage() {
         selectedDay={selectedDay}
         teacherId={id}
       />
-      <EditClassModal
+      {/* <EditClassModal
+        isOpen={isEditClassModalOpen}
+        onClose={() => setIsEditClassModalOpen(false)}
+        selectedSchedule={selectedSchedule}
+        teacherId={id}
+      /> */}
+      <EditAdminClassModal
         isOpen={isEditClassModalOpen}
         onClose={() => setIsEditClassModalOpen(false)}
         selectedSchedule={selectedSchedule}
