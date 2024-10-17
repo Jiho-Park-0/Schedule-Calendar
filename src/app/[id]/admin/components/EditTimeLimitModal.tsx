@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Modal, InputNumber, Form, Button, message, Select } from "antd";
 import { doc, setDoc, collection, getDocs } from "firebase/firestore";
+import { v4 as uuidv4 } from "uuid";
 import { scheduleCalendarFirestore } from "@/firebase";
 import TimePicker from "@/app/[id]/components/TimePicker";
 
@@ -46,16 +47,19 @@ const EditTimeLimitModal: React.FC<EditTimeLimitModalProps> = ({
       message.error("시간을 선택하세요.");
       return;
     }
-    const timeRange = `${startTime}-${endTime}`;
+
+    const uniqueId = uuidv4();
+
     try {
+      // 문서를 새로 추가하면서 id 필드를 함께 저장합니다.
       const docRef = doc(
         scheduleCalendarFirestore,
         "profiles",
         profileId,
         "limit",
-        timeRange
+        uniqueId
       );
-      await setDoc(docRef, { startTime, endTime, limitNum, day });
+      await setDoc(docRef, { startTime, endTime, limitNum, day }); // id를 명시적으로 저장
       message.success("인원 제한이 성공적으로 저장되었습니다.");
       onClose();
     } catch (error) {

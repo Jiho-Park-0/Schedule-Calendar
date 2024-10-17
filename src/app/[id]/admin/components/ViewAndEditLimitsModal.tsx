@@ -75,8 +75,9 @@ const ViewAndEditLimitsModal: React.FC<ViewAndEditLimitsModalProps> = ({
           "profiles",
           profileId,
           "limit",
-          limit.id // Use the existing document ID
+          limit.id
         );
+
         await setDoc(docRef, {
           startTime: limit.startTime,
           endTime: limit.endTime,
