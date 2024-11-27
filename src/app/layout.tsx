@@ -6,7 +6,7 @@ import { AntdRegistry } from "@ant-design/nextjs-registry";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "내 Next.js 앱",
+  title: "스케줄 캘린더",
   description: "Create Next App으로 생성된 앱",
 };
 
